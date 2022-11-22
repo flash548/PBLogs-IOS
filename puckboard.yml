@@ -1,0 +1,3635 @@
+openapi: 3.0.2
+info:
+    title: puckboard
+    version: 1.7.7
+    description: Puckboard's API definitions.
+servers:
+    -
+        url: 'https://PatLovesSneks.com/v1'
+paths:
+    /schedule:
+        summary: Perform operations on schedule state via solver optimization techniques.
+        get:
+            tags:
+                - solver
+            parameters:
+                -
+                    name: organizationId
+                    description: The UUID of the organization to retrieve state data for.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+                -
+                    name: startTime
+                    description: Beginning of the time range to retrieve state data for.
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: true
+                -
+                    name: endTime
+                    description: End of the time range to retrieve state data for.
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Schedule'
+                    description: A collection of metadata reflecting crew and event state.
+            summary: Retrieve the state data needed to produce an optimal schedule.
+            description: >-
+                Obtains a collection of metadata identifying crew, qualifications, event, and currency
+                advancement information.
+    '/events/{eventId}':
+        summary: Path used to manage a single Event.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an `Event`.  This path
+            contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and delete tasks,
+            respectively.
+        get:
+            parameters:
+                -
+                    name: eventId
+                    description: A unique identifier for a `Event`.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventBase'
+                    description: Successful response - returns a single `Event`.
+            operationId: getEvent
+            summary: Get a Event
+            description: Gets the details of a single instance of a `Event`.
+        put:
+            requestBody:
+                description: Updated `Event` information.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventBase'
+                required: true
+            responses:
+                '202':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventBase'
+                    description: Successful response.
+                '404':
+                    content:
+                        application/json: {}
+                    description: Unsuccessful - That event was not found.
+            operationId: updateEvent
+            summary: Update a Event
+            description: Updates an existing `Event`.
+        post:
+            parameters:
+                -
+                    name: offsetHours
+                    description: number of hours offset
+                    schema:
+                        type: integer
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventBase'
+                    description: Duplicated event
+            summary: Duplicate an event for a given event ID
+        delete:
+            responses:
+                '204':
+                    description: Successful response.
+            operationId: deleteEvent
+            summary: Delete a Event
+            description: Deletes an existing `Event`.
+        parameters:
+            -
+                name: eventId
+                description: A unique identifier for a `Event`.
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+    /exportSchedule:
+        summary: Endpoint to retrieve exported schedule
+        description: Export Schedule
+        get:
+            parameters:
+                -
+                    name: date
+                    description: Schedule start date as ISO zulu
+                    schema:
+                        format: date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    name: duration
+                    description: Schedule duration in days
+                    schema:
+                        type: integer
+                    in: query
+                    required: false
+            responses:
+                '200':
+                    content:
+                        application/vnd.openxmlformats-officedocument.wordprocessingml.document: {}
+                    description: Exported schedule as docx successfully
+                '500':
+                    description: Failed to create schedule for export
+    /role:
+        summary: Manage a users role
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListResult'
+                    description: Success - returned Puckboard's roles
+                '400':
+                    content:
+                        application/json: {}
+                    description: Failure - unable to find Puckboard's roles
+            summary: Get all possiblities of Puckboard's roles
+        put:
+            requestBody:
+                description: dodId of user to update
+                content:
+                    application/json:
+                        schema:
+                            format: int64
+                            type: integer
+                required: true
+            parameters:
+                -
+                    name: roles
+                    description: list of roles to update
+                    schema:
+                        type: array
+                        items:
+                            type: string
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListResult'
+                    description: Success - Updated that user's role
+            summary: update roles based on dodId
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            format: int64
+                            type: integer
+                required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListResult'
+                    description: |
+                        returns list of role names
+            summary: get roles based on DOD ID
+    /personnel/dodidExists:
+        post:
+            requestBody:
+                description: dodId to check
+                content:
+                    application/json:
+                        schema:
+                            format: int64
+                            type: integer
+            parameters:
+                -
+                    name: personnelUUID
+                    description: Person's uuid
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: boolean
+                    description: whether or not the dod ID exists
+            summary: Checks to see if a DODID exists for user creation/edits
+    /branch:
+        summary: Gets information about all branches
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MilitaryBranchListResult'
+                    description: Success - got information.
+                '400':
+                    content:
+                        application/json: {}
+                    description: Unsuccessfully retrieved information
+            summary: Gets information about all branches
+    '/organizations/{organizationId}':
+        summary: Path used to manage a single organization.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an `organization`. This
+            path contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and delete
+            tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: A unique identifier for a `organization`.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Organization'
+                    description: Successful response - returns a single `organization`.
+                '404':
+                    description: Organization with specified id was not found
+            operationId: getOrganization
+            summary: Get a organization
+            description: Gets the details of a single instance of a `organization`.
+        put:
+            requestBody:
+                description: Updated `organization` information.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Organization'
+                required: true
+            responses:
+                '202':
+                    description: Successful response.
+            operationId: updateOrganization
+            summary: Update a organization
+            description: Updates an existing `organization`.
+        delete:
+            responses:
+                '204':
+                    description: Successful response.
+            operationId: deleteOrganization
+            summary: Delete a organization
+            description: Deletes an existing `organization`.
+        parameters:
+            -
+                name: organizationId
+                description: A unique identifier for a `organization`.
+                schema:
+                    type: string
+                in: path
+                required: true
+    /personnel:
+        summary: Path used to manage the list of Personnel.
+        description: >-
+            The REST endpoint/path used to list and create zero or more `Personnel` entities.  This path
+            contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: Organization from which to get people
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: false
+                -
+                    name: active
+                    description: whether or not to grab active people
+                    schema:
+                        type: boolean
+                    in: query
+                -
+                    name: page
+                    in: query
+                    description: Zero-based page index (0..N)
+                    required: false
+                    schema:
+                        minimum: 0
+                        type: integer
+                        default: "0"
+                -
+                    name: size
+                    in: query
+                    description: The size of the page to be returned
+                    required: false
+                    schema:
+                        minimum: 1
+                        type: integer
+                        default: "20"
+                -
+                    name: sort
+                    in: query
+                    description: "Sorting criteria in the format: <column>,<asc|desc>. Default sort order is ascending on last name."
+                    required: false
+                    schema:
+                        type: array
+                        items:
+                            type: string
+                -
+                    name: startsWith
+                    in: query
+                    description: Prefix of last name to filter on (valid for when fetching ALL personnel)
+                    required: false
+                    schema:
+                        type: string
+                        default: ""
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PersonListResult'
+                    description: Successful response - returns an array of `Personnel` entities.
+            operationId: getPersonnels
+            summary: List All Personnel
+            description: Gets a list of all `Personnel` entities.
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Person'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Person'
+                    description: CREATED
+                '400':
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                    description: Request did not meet POST requirements
+                '409':
+                    description: Duplicate entry.
+            operationId: createPersonnel
+            summary: Create personnel
+            description: Creates a new `Personnel` instance
+    '/personnel/{personnelId}':
+        summary: Path used to manage a single Personnel.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an `Personnel`.  This
+            path contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and delete
+            tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: isActive
+                    description: Filters by persons active organizations
+                    schema:
+                        type: boolean
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Person'
+                    description: Successful response - returns a single `Personnel`.
+            operationId: getPersonnel
+            summary: Get a Personnel
+            description: Gets the details of a single instance of a `Personnel`.
+        put:
+            requestBody:
+                description: Update `Personnel` information.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Person'
+                required: true
+            responses:
+                '202':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Person'
+                    description: Successful response.
+            operationId: updatePersonnel
+            summary: Update a Personnel
+            description: Updates an existing `Personnel`
+        delete:
+            parameters:
+                -
+                    name: organizationId
+                    description: The organization we are deleting a person from
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '204':
+                    description: Successful response.
+            operationId: deletePersonnel
+            summary: Delete a Personnel
+            description: Deletes an existing `Personnel`.
+        parameters:
+            -
+                name: personnelId
+                description: A unique identifier for a `Personnel`.
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+    /conflicts:
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventBase'
+                required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ConflictListResult'
+                    description: Conflicts fetched
+            summary: Crew availability for a specific event
+    '/conflicts/settings/{organizationId}':
+        summary: conflict settings for a particular organization
+        get:
+            parameters:
+                -
+                    name: primaryEventTypeId
+                    description: Id of the primary event type
+                    schema:
+                        type: integer
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ConflictSettingListResult'
+                    description: Ok
+        put:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/ConflictSetting'
+                required: true
+            parameters:
+                -
+                    name: primaryEventTypeId
+                    description: Id of the primary event type
+                    schema:
+                        type: integer
+                    in: query
+                    required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ConflictSetting'
+                    description: |
+                        Updated conflict settings
+            summary: Updates conflict settings for org
+        parameters:
+            -
+                name: organizationId
+                schema:
+                    type: string
+                in: path
+                required: true
+            -
+                name: primaryEventTypeId
+                description: Id of the primary event type
+                schema:
+                    type: integer
+                in: query
+    /organizations:
+        summary: Path used to manage the list of organizations.
+        description: >-
+            The REST endpoint/path used to list and create zero or more `organization` entities.  This path
+            contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: isSchedulingUnit
+                    description: ''
+                    schema:
+                        type: boolean
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/OrganizationListResult'
+                    description: Successful response - returns an array of `organization` entities.
+            operationId: getOrganizations
+            summary: List All organizations
+            description: Gets a list of all `organization` entities.
+        post:
+            requestBody:
+                description: A new `organization` to be created.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Organization'
+                required: true
+            parameters:
+                -
+                    name: parentId
+                    description: UUID of the Parent Organization
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+            responses:
+                '201':
+                    description: Success - Organization added.
+                '400':
+                    description: Unsuccessful - Organization not added
+            operationId: createOrganization
+            summary: Create a organization
+            description: Adds a new organization
+    '/organizations/{organizationId}/siblings':
+        summary: Path used to manage a single organization.
+        description: ''
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: A unique identifier for a `organization`.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    format: uuid
+                                    type: string
+                    description: Successful response - returns a array of `organizations`.
+                '404':
+                    description: Organization with specified id was not found
+            operationId: getOrganizationSiblings
+            summary: Get a organization's siblings
+            description: Gets the siblings of a `organization`.
+        parameters:
+            -
+                name: organizationId
+                description: A unique identifier for a `organization`.
+                schema:
+                    type: string
+                in: path
+                required: true
+    /user:
+        summary: Get the user's information and permissions
+        description: The REST endpoint/path used to return a `User` entity.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                    description: Successful response - returns a user.
+                '400':
+                    content:
+                        application/json: {}
+                    description: Failure - please input a username in the proper format.
+            summary: Get a user
+            description: Interfaces with the authentication project to retrieve user attributes and permissions
+    /jobRole:
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: Id of branch for which to get jobroles
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/JobRoleListResult'
+                    description: Got list of jobRoles
+                '400':
+                    description: Invalid branch id passed
+            summary: Get job roles for a specific organization
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/JobRole'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/JobRole'
+                    description: Created
+                '400':
+                    description: Bad request
+    /jobRole/compatibility:
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: ''
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/JobRoleCompatibilityListResult'
+                    description: OK
+            description: OK
+        put:
+            requestBody:
+                description: List of job role ids that correspond to the given job role id
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: integer
+                required: true
+            parameters:
+                -
+                    name: jobRoleId
+                    description: ''
+                    schema:
+                        type: integer
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/JobRoleCompatibilityListResult'
+                    description: Job role compatibility
+            summary: Update job role compatibility for a given job role
+    /eventRequests:
+        summary: Path used to manage EventRequests
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: '`EventRequest` related to this organization'
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+                -
+                    name: personId
+                    description: '`EventRequest` related to this person'
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventRequestListResult'
+                    description: Successful response - returns an array of `Request` entities.
+                '400':
+                    content:
+                        application/json: {}
+                    description: Unsuccessful request
+            summary: List of event requests
+            description: Gets a list of `EventRequest` entities.
+        put:
+            parameters:
+                -
+                    name: eventRequestId
+                    description: ID of `EventRequest` being approved
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '202':
+                    content:
+                        application/json: {}
+                    description: Success - EventRequest approved
+                '400':
+                    description: Unsuccessful
+            summary: Approves a EventRequest
+            description: Sets the status of a `EventRequest` to approved.
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventRequest'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventRequest'
+                    description: Success - request submitted.
+                '400':
+                    content:
+                        application/json: {}
+                    description: Unsuccessful - Unable to add `EventRequest`
+            summary: Adds an EventRequest to Puckboard
+            description: Add a `EventRequest` entity.
+        delete:
+            parameters:
+                -
+                    name: eventRequestId
+                    description: ID of `EventRequest` being cancelled
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '202':
+                    content:
+                        application/json: {}
+                    description: Success - EventRequest cancelled
+                '400':
+                    description: Unsuccessful
+            summary: Cancel an EventRequest
+            description: Sets the status of a `EventRequest` to be cancelled.
+        patch:
+            parameters:
+                -
+                    name: roleAssignmentId
+                    description: ID of `RoleAssignment` to reject all `EventRequest`s associated
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '202':
+                    content:
+                        application/json: {}
+                    description: Success - All EventRequest rejected
+                '400':
+                    description: Unsuccessful
+            summary: Reject all EventRequests for a Role Assignment
+            description: Sets the status of a `EventRequest` to be rejected.
+    /eventTypes:
+        summary: Path used to manage Puckboard's event types.
+        get:
+            parameters:
+                -
+                    name: organizationId
+                    description: ''
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventTypeListResult'
+                    description: Successful response - returns an array of `EventType` entities.
+            summary: Get all event types
+            description: Gets a list of all `EventType` entities.
+        put:
+            requestBody:
+                description: A `EventType` to be updated.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventType'
+                required: true
+            responses:
+                '202':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventType'
+                    description: Success - Updated an EventType
+                '400':
+                    content:
+                        application/json: {}
+                    description: Unsuccessful - Request did not meet PUT requirements
+                '409':
+                    content:
+                        application/json: {}
+                    description: Unsuccessful - Duplicate entry.
+            summary: Update an EventType
+            description: Updates an `EventType` and all the surrounding permissions.
+        post:
+            requestBody:
+                description: A new `EventType` to be created.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventType'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventType'
+                    description: Success - Created an EventType
+                '400':
+                    description: Unsuccessful - Request did not meet POST requirements
+                '409':
+                    description: Unsuccessful - Duplicate entry.
+            summary: Create an EventType
+            description: Adds an `EventType` and all the surrounding permissions.
+        delete:
+            parameters:
+                -
+                    name: id
+                    description: Id of `Event Type` to be deleted
+                    schema:
+                        type: integer
+                    in: query
+                    required: true
+            responses:
+                '202':
+                    content:
+                        application/json: {}
+                    description: Accepted - Deleted Event Type
+                '400':
+                    content:
+                        application/json: {}
+                    description: Unsuccessful - There was an error deleting the Event Type
+                '404':
+                    content:
+                        application/json: {}
+                    description: Not Found - Event Type could not be found
+            summary: Delete an EventType
+            description: Deletes an `EventType` and all the surrounding permissions.
+    '/jobRole/{jobRoleId}':
+        put:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/JobRole'
+                required: true
+            parameters:
+                -
+                    name: jobRoleId
+                    schema:
+                        type: integer
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/JobRole'
+                    description: Returns a single updated Job Role
+                '400':
+                    description: Bad job role id
+            summary: Update job role
+        delete:
+            parameters:
+                -
+                    name: jobRoleId
+                    schema:
+                        type: integer
+                    in: path
+                    required: true
+            responses:
+                '204':
+                    description: Job role successfully deleted
+                '400':
+                    description: Could not delete job role
+            summary: Delete job role for specific id
+            description: Deletes existing job role if job role is not being used
+    /eventTypes/gantt:
+        put:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/EventType'
+                required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventTypeListResult'
+                    description: OK
+                '400':
+                    description: bad request
+            summary: update ordering of events
+    '/personnel/{personnelId}/events':
+        summary: Path used to get events for a specific user
+        get:
+            parameters:
+                -
+                    name: startTime
+                    description: Filter by event start time
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventBaseListResult'
+                    description: Successful response - returns a list of `Events` for a specified user
+                '400':
+                    content:
+                        application/json: {}
+                    description: Request did not meet POST requirements
+            operationId: getPersonnelEvents
+            summary: Get Events for a user
+            description: Gets a list of all `Event` entities within given time and organization constraints
+        parameters:
+            -
+                name: personnelId
+                description: A uuid of a user
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+            -
+                name: startTime
+                description: Filter by event start time
+                schema:
+                    format: Date
+                    type: string
+                in: query
+                required: false
+            -
+                name: endTime
+                description: Filter by event end time
+                schema:
+                    format: Date
+                    type: string
+                in: query
+                required: true
+            -
+                name: organizationId
+                description: Get event by organizationId
+                schema:
+                    format: UUID
+                    type: string
+                in: query
+                required: true
+    /analytics:
+        summary: Return basic analytics.
+        get:
+            parameters:
+                -
+                    name: endTime
+                    description: ''
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    name: startTime
+                    description: Filter by start time
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Analytics'
+                    description: Successful response - returns an `Analytics` object.
+            summary: Get basic api endpoint analytics
+            description: Gets basic analytics.
+    '/targetedConflicts/{organizationId}':
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PersistedConflictListResult'
+                    description: Success
+            summary: Gets all conflicts for organization
+        put:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: boolean
+                required: true
+            parameters:
+                -
+                    name: id
+                    description: ''
+                    schema:
+                        format: uuid
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PersistedConflict'
+                    description: Successfully updated status
+        post:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PersistedConflictListResult'
+                    description: Ok
+        parameters:
+            -
+                name: organizationId
+                schema:
+                    type: string
+                in: path
+                required: true
+    /channel/createAndAddMembers:
+        summary: Resource to create channel and add members.
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChannelRequest'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChannelResponse'
+                    description: Successful response returns a mattermost Channel Response
+                '400':
+                    description: Unsuccessful - Channel not created
+    /channel/updateMembers:
+        summary: Resource to update channelmembers
+        put:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChannelMembersRequest'
+                required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChannelResponse'
+                    description: Successful update to mattermost channel
+                '400':
+                    description: Unsuccessful - No aircrew were added to mattermost channel
+    /targetedConflicts/crewAvailability:
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventBase'
+                required: true
+            parameters:
+                -
+                    name: personnelIds
+                    description: UUIDs of personnel for which to find conflicts
+                    schema:
+                        type: array
+                        items:
+                            format: uuid
+                            type: string
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PersistedConflictListResult'
+                    description: Got conflicts
+    '/eventRequests/{eventRequestIds}':
+        put:
+            parameters:
+                -
+                    name: eventRequestIds
+                    description: List of event request ids to be updated to viewed
+                    schema:
+                        type: array
+                        items:
+                            format: uuid
+                            type: string
+                    in: path
+                    required: true
+                -
+                    name: isViewed
+                    description: boolean to show if event request has been viewed
+                    schema:
+                        type: boolean
+                    in: query
+                    required: true
+            responses:
+                '202':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventRequestListResult'
+                    description: Success- EventRequest has been updated
+                '400':
+                    description: Unsuccessful
+            summary: Updates isViewed param for an EventRequest
+            description: Changes isViewed to true for an event request
+    '/eventRequests/{eventRequestId}':
+        delete:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventRequest'
+                    description: Ok
+                '400':
+                    description: Bad request
+            summary: reject event request by id
+        parameters:
+            -
+                name: eventRequestId
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+    /chatTeam:
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatTeamResultList'
+                    description: Successful response - returns an array of `ChatTeam` entities.
+                '400':
+                    description: Unsuccessful request
+            summary: List of chat teams that the puckboard bot is a part of
+            description: Gets a list of ChatTeam entities
+    '/organizations/{organizationId}/chatTeam':
+        summary: Interact with an organization's channels
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatTeamResultList'
+                    description: Gets channels for an organization
+            summary: List of chatTeams associated with an organization
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatTeam'
+                required: true
+            responses:
+                '201':
+                    description: Created
+            summary: Initialize chat teams for an organization
+        parameters:
+            -
+                name: organizationId
+                description: org id
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+    '/chatTeam/{chatTeamId}':
+        put:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatTeam'
+                required: true
+            responses:
+                '204':
+                    description: Updated!
+            summary: Update chat team entry
+        parameters:
+            -
+                name: chatTeamId
+                description: unique identifier of chat team
+                schema:
+                    type: integer
+                in: path
+                required: true
+    '/organizations/{organizationId}/chatTeam/{chatTeamId}':
+        delete:
+            responses:
+                '204':
+                    description: 'Chat team removed from organization '
+            summary: Removes association between a chat team and an organization
+        parameters:
+            -
+                name: organizationId
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+            -
+                name: chatTeamId
+                schema:
+                    type: integer
+                in: path
+                required: true
+    /user/mattermost:
+        get:
+            parameters:
+                -
+                    name: username
+                    description: ''
+                    schema:
+                        type: string
+                    in: query
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MattermostChatUserListResult'
+                    description: Replies w mattermost user
+    '/branch/{branchId}/uploadPersonnel':
+        summary: Endpoint to upload personnel
+        description: Upload personnel
+        post:
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            properties:
+                                file:
+                                    format: binary
+                                    type: string
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PersonUploadResult'
+                    description: Excel upload successful
+                '422':
+                    description: Bad Excel formatting
+            summary: Endpoint to upload personnel excel
+            description: Batch personnel upload
+        parameters:
+            -
+                name: branchId
+                schema:
+                    type: integer
+                in: path
+                required: true
+    /newFeature:
+        summary: Path used to manage the list of new features
+        description: >-
+            The REST endpoint/path used to list and create zero or more `newFeature` entities by a `SYSTEM
+            ADMIN`.  This path contains a `GET` and `POST` operation to perform the list and create tasks,
+            respectively.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NewFeatureListResult'
+                    description: Success - returned list of new features
+            summary: Get a list of new features
+        post:
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/NewFeatureListResult'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NewFeatureListResult'
+                    description: Success - created a new feature
+                '400':
+                    description: Unsuccessful - new feature not added
+            summary: Create a new feature
+    /newFeature/dismissModal:
+        summary: Endpoint to dismissing new feature modal
+        description: >-
+            The REST endpoint/path used to post single instances of dismiss time of a `newFeature` by all
+            roles. This path contains the `POST` operation used to perform the post task.
+        post:
+            responses:
+                '200':
+                    description: Successful response.
+            summary: Logs time when user dismisses new feature modal into person state
+    '/newFeature/{newFeatureId}':
+        summary: Endpoints for a single instance of a new feature
+        description: >-
+            The REST endpoint/path used to update and delete single instances of a `newFeature` by a `SYSTEM
+            ADMIN`. This path contains `PUT` and `DELETE` operations used to perform the update and delete
+            tasks, respectively.
+        put:
+            requestBody:
+                description: updated new feature
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/NewFeature'
+                required: true
+            parameters:
+                -
+                    name: newFeatureId
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NewFeature'
+                    description: successfully updated
+            summary: update a new feature announcement
+        delete:
+            parameters:
+                -
+                    name: newFeatureId
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '204':
+                    description: new feature deleted successfully
+            summary: deletes a new feature for a given ID
+    /user/newFeatures:
+        summary: Endpoint to interface with the user's new features
+        description: >-
+            The REST endpoint/path used to list `newFeatures` by all roles. This path contains a `GET`
+            operation to perform the list task.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NewFeatureListResult'
+                    description: Success - returned a list of new features for a user
+            summary: Get new features for a person
+    /features:
+        summary: Path used to manage the list of features.
+        description: >-
+            The REST endpoint/path used to list and create zero or more `Feature` entities.  This path
+            contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeatureResultList'
+                    description: Successful response - returns an array of `Feature` entities.
+            operationId: getFeatures
+            summary: List All Features
+            description: Gets a list of all `Feature` entities.
+    '/features/{featureId}':
+        summary: Path used to manage a single Feature.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an `Feature`.  This
+            path contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and delete
+            tasks, respectively.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Feature'
+                    description: Successful response - returns a single `Feature`.
+            operationId: getFeature
+            summary: Get a Feature
+            description: Gets the details of a single instance of a `Feature`.
+        put:
+            requestBody:
+                description: Updated `Feature` information.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Feature'
+                required: true
+            responses:
+                '202':
+                    description: Successful response.
+            operationId: updateFeature
+            summary: Update a Feature
+            description: Updates an existing `Feature`.
+        parameters:
+            -
+                name: featureId
+                description: A unique identifier for a `Feature`.
+                schema:
+                    format: uuid
+                    type: string
+                in: path
+                required: true
+    /events:
+        summary: Path used to manage the list of Events.
+        description: >-
+            The REST endpoint/path used to list and create zero or more `Event` entities.  This path contains
+            a `GET` and `POST` operation to perform the list and create tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: startTime
+                    description: Filter by event start time
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: true
+                -
+                    name: endTime
+                    description: Filter by event end time
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: true
+                -
+                    name: organizationId
+                    description: Get event by organizationId
+                    schema:
+                        format: UUID
+                        type: string
+                    in: query
+                    required: true
+                -
+                    name: isCrewRainbow
+                    description: >-
+                        optional boolean denoting whether or not to fetch events by people in the given
+                        organization
+                    schema:
+                        type: boolean
+                    in: query
+                    required: false
+                -
+                    name: lastQueryTime
+                    description: only return events if there has been changes after the lastQueryTime
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventBaseListResult'
+                    description: Successful response - returns an array of `Event` entities.
+                '204':
+                    description: if no event updates since lastQueryTime we return no content
+            operationId: getEvents
+            summary: List All Events
+            description: Gets a list of all `Event` entities.
+        post:
+            requestBody:
+                description: A new `Event` to be created.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EventBase'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventBase'
+                    description: CREATED
+                '400':
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                    description: Request did not meet POST requirments
+                '409':
+                    description: Duplicate entry.
+            operationId: createEvent
+            summary: Create a Event
+            description: Creates a new instance of a `Event`.
+    /analyticsV2:
+        get:
+            parameters:
+                -
+                    examples:
+                        Zulu Example:
+                            value: '2021-06-01T23:49:18.078641Z'
+                        HST Example:
+                            value: '2021-06-02T13:47:46.079087-10:00'
+                    name: endTime
+                    description: 'ISO STRING `YYYY-MM-DDTHH:mm:ss.SSSZ`'
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    examples:
+                        Zulu Example:
+                            value: '2021-06-01T23:49:18.078641Z'
+                        HST Example:
+                            value: '2021-06-02T13:47:46.079087-10:00'
+                    name: startTime
+                    description: 'ISO STRING `YYYY-MM-DDTHH:mm:ss.SSSZ`'
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Analytics'
+                    description: |
+                        OK!
+            summary: Get updated basic api endpoint analytics
+    /analyticsV2/history:
+        get:
+            parameters:
+                -
+                    examples:
+                        Zulu Example:
+                            value: '2021-06-01T23:49:18.078641Z'
+                        HST Example:
+                            value: '2021-06-02T13:47:46.079087-10:00'
+                    name: endTime
+                    description: 'ISO STRING `YYYY-MM-DDTHH:mm:ss.SSSZ`'
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    examples:
+                        Zulu Example:
+                            value: '2021-06-01T23:49:18.078641Z'
+                        HST Example:
+                            value: '2021-06-02T13:47:46.079087-10:00'
+                    name: startTime
+                    description: 'ISO STRING `YYYY-MM-DDTHH:mm:ss.SSSZ`'
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    name: Type
+                    description: Type of snapshots to return
+                    schema:
+                        $ref: '#/components/schemas/AnalyticsQueryTypeEnum'
+                    in: query
+                    required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AnalyticsHistory'
+                    description: |
+                        OK!
+            summary: Get analytics history for given time period
+    /analyticsV2/logs:
+        get:
+            parameters:
+                -
+                    examples:
+                        Zulu Example:
+                            value: '2021-06-01T23:49:18.078641Z'
+                        HST Example:
+                            value: '2021-06-02T13:47:46.079087-10:00'
+                    name: endTime
+                    description: 'ISO STRING `YYYY-MM-DDTHH:mm:ss.SSSZ`'
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    examples:
+                        Zulu Example:
+                            value: '2021-06-01T23:49:18.078641Z'
+                        HST Example:
+                            value: '2021-06-02T13:47:46.079087-10:00'
+                    name: startTime
+                    description: 'ISO STRING `YYYY-MM-DDTHH:mm:ss.SSSZ`'
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    name: pageNumber
+                    description: 'Page to return, default 0'
+                    schema:
+                        type: integer
+                    in: query
+                    required: false
+                -
+                    name: pageSize
+                    description: 'Number of results to per page, default 25'
+                    schema:
+                        type: integer
+                    in: query
+                    required: false
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Logs'
+                    description: |
+                        OK!
+            summary: Get updated basic api endpoint analytics
+    /applicationEntities:
+        summary: Path used to manage the list of applicationentities.
+        description: >-
+            The REST endpoint/path used to list and create zero or more `ApplicationEntity` entities.  This
+            path contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ApplicationEntityListResult'
+                    description: Successful response - returns an array of `ApplicationEntity` entities.
+            operationId: getApplicationEntities
+            summary: List All ApplicationEntities
+            description: Gets a list of all `ApplicationEntity` entities.
+        post:
+            requestBody:
+                description: A new `ApplicationEntity` to be created.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ApplicationEntity'
+                required: true
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ApplicationEntity'
+                    description: Successful response.
+            operationId: createApplicationEntity
+            summary: Create a ApplicationEntity
+            description: Creates a new instance of a `ApplicationEntity`.
+    '/applicationEntities/{applicationEntityId}':
+        summary: Path used to manage a single ApplicationEntity.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an
+            `ApplicationEntity`.  This path contains `GET`, `PUT`, and `DELETE` operations used to perform the
+            get, update, and delete tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: applicationEntityId
+                    description: A unique identifier for a `ApplicationEntity`.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ApplicationEntity'
+                    description: Successful response - returns a single `ApplicationEntity`.
+            operationId: getApplicationEntity
+            summary: Get a ApplicationEntity
+            description: Gets the details of a single instance of a `ApplicationEntity`.
+        put:
+            requestBody:
+                description: Updated `ApplicationEntity` information.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ApplicationEntity'
+                required: true
+            parameters:
+                -
+                    name: applicationEntityId
+                    description: A unique identifier for a `ApplicationEntity`.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '202':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ApplicationEntity'
+                    description: Successful response.
+            operationId: updateApplicationEntity
+            summary: Update a ApplicationEntity
+            description: Updates an existing `ApplicationEntity`.
+        delete:
+            parameters:
+                -
+                    name: applicationEntityId
+                    description: A unique identifier for a `ApplicationEntity`.
+                    schema:
+                        format: uuid
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '204':
+                    description: Successful response.
+            operationId: deleteApplicationEntity
+            summary: Delete a ApplicationEntity
+            description: Deletes an existing `ApplicationEntity`.
+        parameters:
+            -
+                name: applicationEntityId
+                description: A unique identifier for a `ApplicationEntity`.
+                schema:
+                    type: string
+                in: path
+                required: true
+    '/pbl/mission/organization/{organizationId}':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1organization~1{organizationId}'
+    '/pbl/form781/{missionID}/download':
+        $ref: './pbl.yml#/paths/~1pbl~1form781~1{missionID}~1download'
+    '/pbl/mission/{missionId}/approve':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}~1approve'
+    '/pbl/missionData/{missionID}/download':
+        $ref: './pbl.yml#/paths/~1pbl~1missionData~1{missionID}~1download'
+    '/pbl/mission/{missionId}':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}'
+    '/pbl/mission/{missionId}/sortieFlags':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}~1sortieFlags'
+    '/pbl/sortieFlags/{sortieFlagId}/notes':
+        $ref: './pbl.yml#/paths/~1pbl~1sortieFlags~1{sortieFlagId}~1notes'
+    '/pbl/mission/{missionId}/armsStatus':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}~1armsStatus'
+    '/pbl/mission/{missionId}/push':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}~1push'
+    '/pbl/mission/{missionId}/manualPushToArms':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}~1manualPushToArms'
+    /pbl/missionEventTypes:
+        $ref: './pbl.yml#/paths/~1pbl~1missionEventTypes'
+    '/pbl/pblperson/{personId}':
+        $ref: './pbl.yml#/paths/~1pbl~1pblperson~1{personId}'
+    '/pbl/mission/{missionId}/precheck':
+        $ref: './pbl.yml#/paths/~1pbl~1mission~1{missionId}~1precheck'
+    /remis/upload:
+        $ref: './pbl.yml#/paths/~1remis~1upload'
+    /remis/all:
+        $ref: './pbl.yml#/paths/~1remis~1all'
+    /remis/mws/all:
+        $ref:  './pbl.yml#/paths/~1remis~1mws~1all'
+    '/remis/mws/{mws}':
+        $ref:  './pbl.yml#/paths/~1remis~1mws~1{mws}'
+    /analyticsV2/eventErrors: {}
+    /eventGetErrors:
+        summary: Path used to manage the list of eventgeterrors.
+        description: ''
+        get:
+            parameters:
+                -
+                    name: startTime
+                    description: ''
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+                    required: false
+                -
+                    name: endTime
+                    description: ''
+                    schema:
+                        format: Date
+                        type: string
+                    in: query
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/EventGetError'
+                    description: Successful response - returns an array of `EventGetError` entities.
+            operationId: getEventGetErrors
+            summary: List All EventGetErrors
+            description: Gets a list of all `EventGetError` entities.
+        post:
+            requestBody:
+                description: Message of log that you wish to add
+                content:
+                    application/json:
+                        schema:
+                            type: string
+                required: false
+            responses:
+                '201':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EventGetError'
+                    description: Successful response.
+            operationId: createEventGetError
+            summary: Create a EventGetError
+            description: Creates a new instance of a `EventGetError`.
+        delete:
+            responses:
+                '200':
+                    description: Ok!
+components:
+    schemas:
+        ConflictReasonEnum:
+            enum:
+                - TIME_OVERLAP
+                - PRE_CREW_REST_VIOLATION
+                - POST_CREW_REST_VIOLATION
+                - ROLE_CONFLICT
+                - PRE_AND_POST_CREW_REST_VIOLATION
+            type: string
+        Rank:
+            description: A person's rank in the military
+            type: object
+            allOf:
+                -
+                    required:
+                        - payGrade
+                        - rankAbbr
+                        - rankName
+                        - rankStatus
+                        - rankId
+                    type: object
+                    properties:
+                        rankName:
+                            description: The name of this rank
+                            type: string
+                        payGrade:
+                            description: The pay scale for this rank.
+                            type: string
+                        rankAbbr:
+                            description: The abbreviation of the rank name.
+                            type: string
+                        rankStatus:
+                            description: 'Delineates if a rank is Enlisted, Warrant Officer, or Officer.'
+                            type: string
+                        rankId:
+                            description: ''
+                            type: integer
+                -
+                    $ref: '#/components/schemas/Auditable'
+        MilitaryBranch:
+            description: The branchs of the United States armed forces.
+            type: object
+            allOf:
+                -
+                    required:
+                        - ranks
+                    type: object
+                    properties:
+                        id:
+                            description: Puckboard ID of this branch of the armed forces
+                            type: integer
+                        name:
+                            description: Name of this branch of the armed forces
+                            type: string
+                        organizations:
+                            description: Organizations associated with this branch
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/Organization'
+                        ranks:
+                            description: ''
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/Rank'
+        Organization:
+            description: An entity that contains people and events
+            type: object
+            allOf:
+                -
+                    required:
+                        - organizationName
+                        - organizationId
+                        - isArmsEnabled
+                    type: object
+                    properties:
+                        organizationId:
+                            format: uuid
+                            description: ''
+                            type: string
+                        organizationName:
+                            description: ''
+                            type: string
+                        armsOrganizationId:
+                            description: ''
+                            type: string
+                        harmCode:
+                            description: ''
+                            type: string
+                        isSchedulingUnit:
+                            description: ''
+                            type: boolean
+                        branchId:
+                            description: Branch ID (not an object)
+                            type: integer
+                        type:
+                            description: ''
+                            enum:
+                                - Wing
+                                - Squadron
+                            type: string
+                        chatTeams:
+                            description: ''
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/ChatTeam'
+                        isPblEnabled:
+                            description: ''
+                            type: boolean
+                        isArmsEnabled:
+                            description: ''
+                            type: boolean
+                -
+                    $ref: '#/components/schemas/Auditable'
+        Schedule:
+            description: >-
+                A collection of metadata related to crew and event state that can be used to produce an
+                optimal assignment.
+            type: object
+            allOf:
+                -
+                    type: object
+                    properties:
+                        jobRoles:
+                            description: The job role compatibility hierarchy for the associated squadron.
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/JobRoleCompatibility'
+                        personnel:
+                            description: The personnel available for scheduling within the associated squadron.
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/Person'
+                        eventTypes:
+                            description: The types of events that need to be scheduled within the associated squadron.
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/EventType'
+                        events:
+                            description: The events that need to be scheduled within the associated squadron.
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/EventBase'
+                -
+                    $ref: '#/components/schemas/Auditable'
+        SchedulingUnit:
+            title: SchedulingUnit
+            description: An organization that can schedule events
+            type: object
+            allOf:
+                -
+                    required:
+                        - value
+                        - label
+                        - image
+                        - branch
+                        - active
+                    type: object
+                    properties:
+                        value:
+                            description: ''
+                            type: string
+                        label:
+                            description: ''
+                            type: string
+                        image:
+                            description: ''
+                            type: string
+                        branch:
+                            description: ''
+                            type: string
+                        active:
+                            description: boolean for determining if someone is on a scheduling unit
+                            type: boolean
+                -
+                    $ref: '#/components/schemas/Auditable'
+        RoleAssignment:
+            title: RoleAssignment
+            description: An object for containing assignments of personnel to a specific role on an event.
+            type: object
+            allOf:
+                -
+                    required:
+                        - event
+                        - jobRole
+                    type: object
+                    properties:
+                        personId:
+                            format: uuid
+                            type: string
+                        eventId:
+                            format: uuid
+                            type: string
+                        id:
+                            format: uuid
+                            description: role assignment id
+                            type: string
+                        index:
+                            description: integer to keep track of index number for sorting
+                            type: integer
+                        confirmationStatus:
+                            description: Status of confirmation on a role assignment
+                            enum:
+                                - NOT_CONTACTED
+                                - CONTACTED
+                                - CONFIRMED
+                            type: string
+                        jobRole:
+                            $ref: '#/components/schemas/JobRole'
+                            description: ''
+                        notes:
+                            description: ''
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/RoleAssignmentNote'
+                -
+                    $ref: '#/components/schemas/Auditable'
+        Person:
+            title: Root Type for Person
+            description: Data type for a person.
+            type: object
+            allOf:
+                -
+                    required:
+                        - isPlaceholder
+                    type: object
+                    properties:
+                        id:
+                            format: uuid
+                            type: string
+                        roleAssignments:
+                            description: Set of RoleAssignments
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/RoleAssignment'
+                        callSign:
+                            description: Person's call sign
+                            type: string
+                        lastName:
+                            type: string
+                        firstName:
+                            description: ''
+                            type: string
+                        contactNumber:
+                            description: 10-digit phone contact number
+                            type: string
+                        email:
+                            description: ''
+                            type: string
+                        dodId:
+                            format: int64
+                            description: Department of Defense ID
+                            type: integer
+                        isPlaceholder:
+                            description: is Person a placeholder with no DODID
+                            type: boolean
+                        rankId:
+                            description: ''
+                            type: integer
+                        organizationStatus:
+                            description: List of organizations Person is associated with
+                            type: object
+                            additionalProperties:
+                                $ref: '#/components/schemas/OrganizationStatus'
+                        primaryOrganizationId:
+                            format: uuid
+                            description: Primary Organization Obj of the Person
+                            type: string
+                        chatUserId:
+                            description: ''
+                            type: string
+                        chatUserName:
+                            description: Chat Service user name
+                            type: string
+                        defaultRole:
+                            type: string
+                            description: Default role when logging into puckboard
+                -
+                    $ref: '#/components/schemas/Auditable'
+        OrganizationStatus:
+            title: Organization Status
+            description: An entity that shows the relationship between people and organizations
+            type: object
+            allOf:
+                -
+                    required:
+                        - active
+                        - id
+                    properties:
+                        active:
+                            description: >-
+                                boolean to determine the status of a person for an organization from the
+                                person's perspective.
+                            type: boolean
+                        organizationId:
+                            format: uuid
+                            description: ''
+                            type: string
+                        jobRoleId:
+                            description: ''
+                            type: integer
+                -
+                    $ref: '#/components/schemas/Auditable'
+        Conflict:
+            title: Conflict
+            description: |
+                Data type for event conflicts. Note that the "reason"
+                will be one of the following:
+                - TimeOverlap
+                - CrewRestViolation
+                - RoleConflict (not yet implemented--will have a null
+                conflictingEventId)
+            type: object
+            allOf:
+                -
+                    required:
+                        - conflictingEvent
+                        - personId
+                        - primaryEvent
+                        - reason
+                        - id
+                    type: object
+                    properties:
+                        reason:
+                            $ref: '#/components/schemas/ConflictReasonEnum'
+                        primaryEvent:
+                            $ref: '#/components/schemas/EventBase'
+                        conflictingEvent:
+                            $ref: '#/components/schemas/EventBase'
+                        personId:
+                            format: uuid
+                            type: string
+                        id:
+                            format: uuid
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        JobRole:
+            description: ''
+            type: object
+            allOf:
+                -
+                    required:
+                        - organizationId
+                        - roleType
+                        - roleName
+                        - active
+                    type: object
+                    properties:
+                        roleType:
+                            description: ''
+                            type: string
+                        roleName:
+                            description: ''
+                            type: string
+                        id:
+                            description: ''
+                            type: integer
+                        organizationId:
+                            format: uuid
+                            description: ''
+                            type: string
+                        active:
+                            description: ''
+                            type: boolean
+                        abbreviation:
+                            description: Custom abbreviation of role name for display
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        JobRoleCompatibility:
+            description: ''
+            type: object
+            properties:
+                jobRole:
+                    description: Id of job role
+                    type: integer
+                compatibleJobRoles:
+                    description: Ids of compatible job roles
+                    type: array
+                    items:
+                        type: integer
+        EventRequest:
+            description: A request to participate in an event
+            type: object
+            allOf:
+                -
+                    required:
+                        - organizationId
+                        - eventId
+                        - roleAssignmentId
+                        - personId
+                    type: object
+                    properties:
+                        organizationId:
+                            format: uuid
+                            description: The organization that the request is within
+                            type: string
+                        eventId:
+                            format: uuid
+                            description: The id of the event we are requesting
+                            type: string
+                        id:
+                            format: uuid
+                            description: Unique identifier for this event request
+                            type: string
+                        roleAssignmentId:
+                            format: uuid
+                            description: The id of the role assignment we are requesting
+                            type: string
+                        personId:
+                            format: uuid
+                            description: The id of the person who is requesting
+                            type: string
+                        status:
+                            description: ''
+                            enum:
+                                - pending
+                                - approved
+                                - rejected
+                                - cancelled
+                            type: string
+                        createdDate:
+                            format: Date
+                            description: When this Event Request was created
+                            type: string
+                        eventStartTime:
+                            format: Date
+                            description: start time of event in request for notification menu
+                            type: string
+                        eventName:
+                            description: name of event for notification menu
+                            type: string
+                        jobRoleId:
+                            description: job role id for notification message
+                            type: integer
+                        isViewed:
+                            description: Boolean value to show if EventRequest has been seen by user
+                            type: boolean
+                -
+                    $ref: '#/components/schemas/Auditable'
+        RoleAssignmentNote:
+            description: 'Note/Bean/T&R Code  '
+            type: object
+            allOf:
+                -
+                    type: object
+                    properties:
+                        id:
+                            format: uuid
+                            description: ''
+                            type: string
+                        note:
+                            description: ''
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        Analytics:
+            description: An analytics object
+            required:
+                - time
+                - results
+            type: object
+            properties:
+                time:
+                    format: Date
+                    description: Time analytics query ran
+                    type: string
+                results:
+                    description: Array Analytics Data represented by `AnalyticsResult` objects
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnalyticsResult'
+        Logs:
+            description: An analytics object
+            required:
+                - time
+                - results
+            type: object
+            properties:
+                time:
+                    format: Date
+                    description: Time logs were retreived
+                    type: string
+                start_time:
+                    format: Date
+                    description: Logs search start time
+                    type: string
+                end_time:
+                    format: Date
+                    description: Logs search end time
+                    type: string
+                totalPages:
+                    description: Total pages available in query data
+                    type: integer
+                totalElements:
+                    description: Total entries in query data
+                    type: integer
+                pageNumber:
+                    description: Nmber of the page you are on
+                    type: integer
+                pageSize:
+                    description: Size of each page
+                    type: integer
+                results:
+                    description: Array of Logs represented by `LogResult` objects
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/LogResult'
+        AnalyticsResult:
+            description: An analytics object
+            required:
+                - name
+                - total
+            type: object
+            properties:
+                name:
+                    description: Name of result
+                    type: string
+                total:
+                    description: Number of results associated with name
+                    type: integer
+        LogResult:
+            description: A log object
+            required:
+                - log_id
+                - uri
+            type: object
+            properties:
+                log_id:
+                    format: uuid
+                    description: Identifier of which `LogResult` this is
+                    type: string
+                uri:
+                    description: URI that was called
+                    type: string
+                status:
+                    description: HTTP status code returned
+                    type: integer
+                method:
+                    description: REST Verb called
+                    type: string
+                principal_id:
+                    description: UUID of the person that initiated the API call
+                    type: string
+                query_parameters:
+                    description: Query parameters sent with the API request
+                    type: string
+                user_agent:
+                    description: User agent from the requester
+                    type: string
+                time_stamp:
+                    format: Date
+                    description: Time log was captured
+                    type: string
+                stackTrace:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StackTrace'
+        EventType:
+            description: A generic object that can represent any event type
+            type: object
+            allOf:
+                -
+                    required:
+                        - name
+                        - icon
+                        - id
+                        - tag
+                        - organizationId
+                        - active
+                        - personnelSelectType
+                        - index
+                        - creatableByMember
+                    type: object
+                    properties:
+                        name:
+                            description: Name of this type of event
+                            type: string
+                        icon:
+                            description: The name of the icon to be used to reperesent this event
+                            type: string
+                        id:
+                            description: Identifier of which `EventType` this is
+                            type: integer
+                        tag:
+                            description: Tag name to apply to class names
+                            type: string
+                        organizationId:
+                            format: uuid
+                            description: Organization this `EventType` belongs to
+                            type: string
+                        color:
+                            description: The selected color scheme of the event
+                            type: string
+                        active:
+                            description: ''
+                            type: boolean
+                        personnelSelectType:
+                            description: 'Integer to determine what kind of select, each event form should have'
+                            type: integer
+                        eventFields:
+                            description: ''
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/EventField'
+                        preCrewRest:
+                            description: ''
+                            type: integer
+                        customPostCrewRest:
+                            description: ''
+                            type: integer
+                        postCrewRest:
+                            description: ''
+                            enum:
+                                - DURATION_DIV_3_MAX_96
+                                - CUSTOM
+                                - NONE
+                            type: string
+                        defaultJobRoles:
+                            description: Default event job roles for specific event type
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/DefaultEventJobRole'
+                        creatableByMember:
+                            description: >-
+                                A flag to determine if this is an `EventType` that can be
+                                created/updated/deleted by any of the Organization's Members.
+
+                                Examples: Personnel Events - Leave, Desk, Medical, etc.
+                            type: boolean
+                        index:
+                            description: defines order in which event type appears on the gantt
+                            type: number
+                        chatTeamId:
+                            description: ''
+                            type: integer
+                        chatTeamName:
+                            description: >-
+                                Unique name of Mattermost Chat Team for the purpose of navigating to a channel
+                                for that event type
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        EventFieldValue:
+            description: Generic field entries for event forms
+            type: object
+            allOf:
+                -
+                    type: object
+                    properties:
+                        id:
+                            format: uuid
+                            description: UUID
+                            type: string
+                        eventId:
+                            format: uuid
+                            description: ID of the Event
+                            type: string
+                        value:
+                            description: ''
+                            type: string
+                        eventFieldId:
+                            format: uuid
+                            description: 'ID of the field type (i.e. String, Date, Integer/Number)'
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        EventField:
+            description: ''
+            type: object
+            allOf:
+                -
+                    required:
+                        - index
+                    type: object
+                    properties:
+                        id:
+                            format: uuid
+                            description: ''
+                            type: string
+                        fieldType:
+                            description: ''
+                            type: string
+                        name:
+                            description: label for field
+                            type: string
+                        active:
+                            description: ''
+                            type: boolean
+                        eventTypeId:
+                            description: ''
+                            type: integer
+                        index:
+                            description: ''
+                            type: integer
+                -
+                    $ref: '#/components/schemas/Auditable'
+        DefaultEventJobRole:
+            description: ''
+            type: object
+            allOf:
+                -
+                    required:
+                        - index
+                        - eventTypeId
+                        - jobRoleId
+                    type: object
+                    properties:
+                        eventTypeId:
+                            description: ''
+                            type: integer
+                        jobRoleId:
+                            description: ''
+                            type: integer
+                        index:
+                            description: ''
+                            type: integer
+                        id:
+                            format: uuid
+                            description: UUID of default job role
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        ConflictSetting:
+            description: conflict setting object
+            type: object
+            allOf:
+                -
+                    required:
+                        - ignoreConflict
+                    type: object
+                    properties:
+                        id:
+                            format: uuid
+                            description: ''
+                            type: string
+                        eventTypeId1:
+                            description: ''
+                            type: integer
+                        eventTypeId2:
+                            description: ''
+                            type: integer
+                        organizationId:
+                            description: ''
+                            type: string
+                        type:
+                            $ref: '#/components/schemas/ConflictReasonEnum'
+                        ignoreConflict:
+                            description: whether or not to ignore a conflict
+                            type: boolean
+                -
+                    $ref: '#/components/schemas/Auditable'
+        Role:
+            description: 'An object which contains a list of permissions '
+            required:
+                - permissions
+                - name
+            type: object
+            properties:
+                name:
+                    description: Name of role
+                    type: string
+                permissions:
+                    description: Array of permissions for role
+                    type: array
+                    items:
+                        type: string
+        PersistedConflict:
+            description: Stores conflict data
+            type: object
+            allOf:
+                -
+                    required:
+                        - primaryEvent
+                        - conflictingEvent
+                        - person
+                        - reason
+                        - active
+                        - lastModifiedDate
+                        - id
+                    type: object
+                    properties:
+                        primaryEvent:
+                            $ref: '#/components/schemas/EventBase'
+                            description: ''
+                        conflictingEvent:
+                            $ref: '#/components/schemas/EventBase'
+                            description: ''
+                        person:
+                            $ref: '#/components/schemas/Person'
+                            description: ''
+                        reason:
+                            $ref: '#/components/schemas/ConflictReasonEnum'
+                            description: ''
+                        active:
+                            description: ''
+                            type: boolean
+                        waivedByUserId:
+                            format: uuid
+                            description: ''
+                            type: string
+                        id:
+                            format: uuid
+                            description: ''
+                            type: string
+                        lastModifiedDate:
+                            format: Date
+                            description: ''
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        ChannelResponse:
+            description: ''
+            required:
+                - membersAdded
+                - membersNotAdded
+            type: object
+            properties:
+                membersAdded:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ChannelResponseItem'
+                membersNotAdded:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ChannelResponseItem'
+                channelId:
+                    description: ''
+                    type: string
+                errorMessage:
+                    description: message of the error
+                    type: string
+        ChannelMembersRequest:
+            description: ''
+            required:
+                - aircrewIds
+                - channelId
+                - eventId
+            type: object
+            properties:
+                eventId:
+                    format: uuid
+                    description: ''
+                    type: string
+                aircrewIds:
+                    description: ''
+                    type: array
+                    items:
+                        format: uuid
+                        type: string
+                channelId:
+                    description: ''
+                    type: string
+                eventTypeId:
+                    description: ''
+                    type: integer
+        ChannelResponseItem:
+            description: ''
+            required:
+                - userId
+            type: object
+            properties:
+                userId:
+                    format: uuid
+                    description: ''
+                    type: string
+                message:
+                    description: ''
+                    type: string
+        ListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        type: string
+        ConflictListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Conflict'
+        ConflictSettingListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ConflictSetting'
+        EventBaseListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EventBase'
+        EventRequestListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EventRequest'
+        EventTypeListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EventType'
+        JobRoleCompatibilityListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/JobRoleCompatibility'
+        JobRoleListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/JobRole'
+        OrganizationListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Organization'
+        PersistedConflictListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PersistedConflict'
+        UploadedPerson:
+            description: 'Result of a single row from the batch upload spreadsheet'
+            required:
+                - uploadResult
+                - row
+                - errorString
+            type: object
+            properties:
+                uploadResult:
+                    description: 'The result of this person'
+                    enum:
+                        - ADDED
+                        - ALREADY_EXISTED
+                        - NO_DODID
+                        - NO_ORG_ASSIGNED
+                    type: string
+                person:
+                    description: 'The newly created person entity from the spreadsheet'
+                    $ref: '#/components/schemas/Person'
+                row:
+                    description: 'Row number from the source spreadsheet'
+                    type: integer
+                errorString:
+                    description: 'Any information as to why this person was not newly created'
+                    type: string
+        PersonUploadResult:
+            description: 'Result details from a batch personnel upload'
+            required:
+                - uploadedPeople
+                - totalCreated
+                - totalNotCreated
+            type: object
+            properties:
+                uploadedPeople:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UploadedPerson'
+                totalCreated:
+                    description: 'Total new people uploaded successfully'
+                    type: integer
+                    format: int64
+                totalNotCreated:
+                    description: 'Total not newly created - either errored or existed already'
+                    type: integer
+                    format: int64
+        PersonListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Person'
+                page:
+                    description: 'page number of the data'
+                    type: integer
+                size:
+                    description: 'current page size'
+                    type: integer
+                totalElements:
+                    description: 'total number of elements that reside in the database'
+                    type: integer
+                    format: int64
+                totalPages:
+                    description: 'total pages that can be rendered'
+                    type: integer
+        MilitaryBranchListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MilitaryBranch'
+        Auditable:
+            description: ''
+            type: object
+            properties:
+                createdBy:
+                    format: uuid
+                    description: id of user who created the entry
+                    type: string
+                lastModifiedBy:
+                    format: uuid
+                    description: id of user who last modified the entry
+                    type: string
+                createdDate:
+                    format: Date
+                    description: date of entry creation
+                    type: string
+                lastModifiedDate:
+                    format: Date
+                    description: date entry was last modified
+                    type: string
+        ChatTeam:
+            description: chat team dto
+            required:
+                - teamId
+                - initialPost
+                - id
+                - name
+            type: object
+            properties:
+                archiveReuseTime:
+                    description: Age of channel in days before reuse
+                    type: number
+                displayName:
+                    description: display name of chat team
+                    type: string
+                initialPost:
+                    description: Initial post of each new channel created
+                    type: string
+                teamId:
+                    description: MM ID of chat team
+                    type: string
+                id:
+                    description: 'unique key of chat team '
+                    type: integer
+                name:
+                    description: Unique name of a chat team in Mattermost
+                    type: string
+        ChatTeamResultList:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ChatTeam'
+        MattermostUser:
+            description: mattermost user for confirmation by scheduler
+            required:
+                - firstName
+                - lastName
+                - username
+                - id
+            type: object
+            properties:
+                firstName:
+                    description: ''
+                    type: string
+                lastName:
+                    description: ''
+                    type: string
+                email:
+                    description: ''
+                    type: string
+                username:
+                    description: ''
+                    type: string
+                id:
+                    description: ''
+                    type: string
+        NewFeatureListResult:
+            description: List result of new features
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/NewFeature'
+        NewFeature:
+            description: 'New feature to be shown on the new feature modal '
+            type: object
+            allOf:
+                -
+                    required:
+                        - name
+                        - description
+                        - icon
+                        - id
+                        - startTime
+                        - endTime
+                    type: object
+                    properties:
+                        name:
+                            description: 'New feature name '
+                            type: string
+                        description:
+                            description: 'Description of new feature '
+                            type: string
+                        icon:
+                            description: 'Svg file of new feature icon '
+                            type: string
+                        id:
+                            format: uuid
+                            description: New feature id
+                            type: string
+                        endTime:
+                            format: Date
+                            description: 'Time for new feature to stop being displayed on modal '
+                            type: string
+                        startTime:
+                            format: Date
+                            description: 'Date for feature to be displayed on modal '
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        Feature:
+            description: Feature to enable feature flag deployment
+            type: object
+            allOf:
+                -
+                    required:
+                        - featureId
+                        - featureName
+                        - enabled
+                    type: object
+                    properties:
+                        featureId:
+                            format: uuid
+                            description: uuid of feature
+                            type: string
+                        featureName:
+                            $ref: '#/components/schemas/FeatureEnum'
+                            description: enum of feature
+                        enabled:
+                            description: boolean of feature if it is enabled to run or not
+                            type: boolean
+                -
+                    $ref: '#/components/schemas/Auditable'
+        FeatureEnum:
+            description: ''
+            enum:
+                - ANALYTICS_LOGGING
+            type: string
+        FeatureResultList:
+            description: list result for features in order to not return arrays by the API
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Feature'
+        PermissionType:
+            description: ''
+            enum:
+                - CREATE_PERSON
+                - READ_PERSON
+                - UPDATE_PERSON
+                - DELETE_PERSON
+                - CREATE_PLACEHOLDER_PERSON
+                - CREATE_BRANCH
+                - READ_BRANCH
+                - UPDATE_BRANCH
+                - DELETE_BRANCH
+                - CREATE_EVENT
+                - READ_EVENT
+                - UPDATE_EVENT
+                - DELETE_EVENT
+                - CREATE_ORGANIZATION
+                - READ_ORGANIZATION
+                - UPDATE_ORGANIZATION
+                - DELETE_ORGANIZATION
+                - CREATE_PARENT_ORGANIZATION
+                - READ_EVENT_REQUEST
+                - UPDATE_EVENT_REQUEST
+                - CREATE_EVENT_REQUEST
+                - UPDATE_APPLICATION_ROLES
+                - UPDATE_CONFLICT_STATUS
+                - UPDATE_ORGANIZATION_SETTINGS
+                - READ_ADMIN_PAGE
+                - CREATE_PERSONNEL_FILE
+                - READ_ALL_ORGANIZATIONS
+                - READ_ALL_SIBLING_ORGANIZATIONS
+                - READ_CONFLICTS
+                - READ_DEVELOPER_TOOLS
+                - READ_ANALYTICS
+                - DELETE_CREW_AVAILABILITY
+                - READ_STABLE_ENDPOINTS
+                - UPDATE_ORGANIZATION_CHAT_SETTINGS
+                - UPDATE_SYSTEM_CHAT_SETTINGS
+                - READ_ORGANIZATION_CHAT_SETTINGS
+                - UPDATE_NEW_FEATURES
+                - READ_NEW_FEATURES
+                - CREATE_TAIL
+                - READ_TAIL
+                - UPDATE_TAIL
+                - DELETE_TAIL
+                - CREATE_CHAT_CHANNEL
+                - CREATE_CHAT_TEAM
+                - CREATE_MEMBER_EVENT
+                - DELETE_MEMBER_EVENT
+                - UPDATE_MEMBER_EVENT
+                - READ_MEMBER_EVENT
+                - READ_EVENT_BOX_DROPDOWN
+                - READ_FEATURE_FLAG
+                - UPDATE_FEATURE_FLAG
+                - CREATE_APPLICATION_ENTITY
+                - DELETE_APPLICATION_ENTITY
+                - READ_APPLICATION_ENTITY
+                - UPDATE_APPLICATION_ENTITY
+                - READ_PBLFORM781
+                - UPDATE_PBLFORM781
+                - CREATE_PBLFORM781
+                - DELETE_PBLFORM781
+                - READ_PBL_MISSION
+                - UPDATE_PBL_MISSION
+                - CREATE_PBL_MISSION
+                - DELETE_PBL_MISSION
+                - MX_VIEW_MISSION_DATA_PAGE
+                - ADO_VIEW_MISSION_DATA_PAGE
+                - SARM_VIEW_MISSION_DATA_PAGE
+                - UPDATE_PBL_SETTINGS
+                - UPLOAD_REMIS_DATA
+                - READ_REMIS_DATA
+            type: string
+        ApplicationPermission:
+            description: List of application permissions
+            required:
+                - applicationPermissionName
+                - applicationPermissionId
+            type: object
+            properties:
+                applicationPermissionName:
+                    description: Application permission name
+                    type: string
+                applicationPermissionId:
+                    description: Application permission id
+                    type: integer
+        ApplicationRole:
+            description: List of application roles
+            required:
+                - id
+                - name
+                - permissions
+            type: object
+            properties:
+                id:
+                    format: int64
+                    description: Application role id
+                    type: integer
+                name:
+                    description: Application role name
+                    type: string
+                permissions:
+                    description: A list of application permissions
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ApplicationPermission'
+        ApplicationEntity:
+            description: An entity that contains application roles and permissions
+            type: object
+            allOf:
+                -
+                    required:
+                        - applicationEntityId
+                        - permissions
+                        - name
+                        - namespace
+                        - roles
+                    type: object
+                    properties:
+                        applicationEntityId:
+                            format: uuid
+                            description: Application entity id
+                            type: string
+                        permissions:
+                            description: A list of application permissions
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/ApplicationPermission'
+                        name:
+                            description: Application entity name
+                            type: string
+                        namespace:
+                            description: Application entity namespace
+                            type: string
+                        roles:
+                            description: A list of application roles
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/ApplicationRole'
+                -
+                    $ref: '#/components/schemas/Auditable'
+        ApplicationEntityListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ApplicationEntity'
+        EventBase:
+            title: Root Type for Event
+            description: The root of the Event type's schema.
+            type: object
+            allOf:
+                -
+                    required:
+                        - eventType
+                        - organizationId
+                    type: object
+                    properties:
+                        eventType:
+                            type: integer
+                        name:
+                            type: string
+                        id:
+                            format: uuid
+                            type: string
+                        startTime:
+                            format: Date
+                            type: string
+                        endTime:
+                            format: Date
+                            type: string
+                        notes:
+                            type: string
+                        roleAssignments:
+                            description: Set of RoleAssignments
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/RoleAssignment'
+                        postCrewRestTime:
+                            description: 'Crew rest after the event, in minutes'
+                            type: integer
+                        preCrewRestTimeHard:
+                            description: >-
+                                Crew rest before an Event, in minutes. This is the hard time and is used for
+                                alerts - applies to all events.
+                            type: integer
+                        preCrewRestTimeSoft:
+                            description: 'Crew rest before the event, in minutes. This applies to flight events only.'
+                            type: integer
+                        updating:
+                            description: Boolean for when the event is updating for UI purposes
+                            type: boolean
+                        organizationId:
+                            format: uuid
+                            description: Id of organization this event belongs to
+                            type: string
+                        additionalValues:
+                            description: additional generic form values
+                            type: object
+                            additionalProperties:
+                                $ref: '#/components/schemas/EventFieldValue'
+                        chatChannelId:
+                            description: ''
+                            type: string
+                        chatChannelIsActive:
+                            description: ''
+                            type: boolean
+                        chatChannelName:
+                            description: >-
+                                composite string of `chatChannelTailNumber` and `chatChannelMissionNumber` for
+                                Chat Service Channel Name
+                            type: string
+                        chatChannelTailNumber:
+                            description: Tail number of event/channel
+                            type: string
+                        chatChannelMissionNumber:
+                            description: Mission number of event/channel
+                            type: string
+                -
+                    $ref: '#/components/schemas/Auditable'
+        ChannelRequest:
+            description: ''
+            required:
+                - eventId
+                - eventTypeId
+                - channelName
+            type: object
+            properties:
+                eventId:
+                    format: uuid
+                    description: ''
+                    type: string
+                aircrewIds:
+                    description: ''
+                    type: array
+                    items:
+                        format: uuid
+                        type: string
+                channelName:
+                    description: ''
+                    type: string
+                channelMissionNumber:
+                    description: ''
+                    type: string
+                channelTailNumber:
+                    description: ''
+                    type: string
+                eventTypeId:
+                    description: ''
+                    type: integer
+        MattermostChatUser:
+            description: 'mattermost user returned by searching in roster form '
+            required:
+                - id
+                - username
+                - first_name
+                - last_name
+            type: object
+            properties:
+                id:
+                    description: ''
+                    type: string
+                username:
+                    description: ''
+                    type: string
+                first_name:
+                    description: ''
+                    type: string
+                last_name:
+                    description: ''
+                    type: string
+                email:
+                    description: ''
+                    type: string
+                nickname:
+                    description: ''
+                    type: string
+        MattermostChatUserListResult:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MattermostChatUser'
+        AnalyticsQueryTypeEnum:
+            description: Types of analytics queries for Analytics History
+            enum:
+                - MINUTE
+                - HOUR
+                - DAY
+                - MONTH
+                - YEAR
+                - TODAY
+            type: string
+        AnalyticsSnapshot:
+            description: Snapshot of Analytics
+            required:
+                - id
+                - query_type
+                - total_active_users
+                - total_requests_to_work
+                - days_total_active_users
+                - days_total_requests_to_work
+                - total_users
+                - total_events
+                - total_organizations
+                - execute_time
+                - query_start_time
+                - query_end_time
+            type: object
+            properties:
+                id:
+                    description: ''
+                    type: string
+                query_type:
+                    $ref: '#/components/schemas/AnalyticsQueryTypeEnum'
+                total_active_users:
+                    description: Total active users for time period
+                    type: integer
+                total_requests_to_work:
+                    description: Total requests to work for the time period
+                    type: integer
+                days_total_active_users:
+                    description: Total active users so far that day
+                    type: integer
+                days_total_requests_to_work:
+                    description: Total requests to work so far that day
+                    type: integer
+                total_users:
+                    description: Total number of users in the system at request time
+                    type: integer
+                total_events:
+                    description: Total number of events in the system at request time
+                    type: integer
+                total_organizations:
+                    description: Total number of organizations in the system at request time
+                    type: integer
+                time_stamp:
+                    format: Date
+                    description: date request executed
+                    type: string
+                query_start_time:
+                    format: Date
+                    description: Query start time
+                    type: string
+                query_end_time:
+                    format: Date
+                    description: Query end time
+                    type: string
+        AnalyticsHistory:
+            description: ''
+            required:
+                - result
+            type: object
+            properties:
+                start_time:
+                    format: Date
+                    description: Query start time
+                    type: string
+                end_time:
+                    format: Date
+                    description: Query start time
+                    type: string
+                result:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnalyticsSnapshot'
+        StackTrace:
+            description: ''
+            required:
+                - stackTraceId
+                - stackTrace
+                - exceptionType
+                - sessionId
+            type: object
+            properties:
+                stackTrace:
+                    description: ''
+                    type: string
+                exceptionType:
+                    description: ''
+                    type: string
+                sessionId:
+                    description: ''
+                    type: string
+                stackTraceId:
+                    format: uuid
+                    description: ''
+                    type: string
+        EventGetError:
+            description: ''
+            required:
+                - id
+                - timestamp
+                - principalId
+            type: object
+            properties:
+                id:
+                    format: uuid
+                    description: ''
+                    type: string
+                timestamp:
+                    format: Datte
+                    description: ''
+                    type: string
+                principalId:
+                    format: uuid
+                    description: ''
+                    type: string
+                message:
+                    description: ''
+                    maxLength: 255
+                    type: string
+        User:
+            description: User class
+            required:
+                - applicationRoles
+                - info
+                - schedulingUnits
+                - selectedOrganizationId
+                - defaultRole
+            type: object
+            properties:
+                info:
+                    $ref: '#/components/schemas/Person'
+                    description: Retrieves all information in the Person object about this User
+                schedulingUnits:
+                    description: ''
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SchedulingUnit'
+                siblingOrganizations:
+                    description: An array of orgs with the same parent org
+                    type: array
+                    items:
+                        format: uuid
+                        type: string
+                applicationRoles:
+                    description: Array of roles and permissions
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Role'
+                defaultRole:
+                    type: string
+                selectedOrganizationId:
+                    format: uuid
+                    description: ' The organization that user currently has selected. Default is their primary organization.'
+                    type: string
+

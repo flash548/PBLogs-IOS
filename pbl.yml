@@ -1,0 +1,2030 @@
+openapi: 3.0.2
+info:
+  title: pbl
+  version: 1.4.0
+  description: PBL's API definitions
+paths:
+  '/pbl/crewMember/{crewMemberId}/events':
+    summary: endpoint for getting PBLEvents by crewMemberId
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PBLEventListResult'
+          description: returns ListResult containing PBLEvents for crew member
+      summary: gets PBL events by crewMemberId
+    parameters:
+      -
+        name: crewMemberId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/organization/{organizationId}/events':
+    summary: pbl route for getting events by organization
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PBLEventListResult'
+          description: Returns list of events
+      summary: get PBLEvents by organizationId
+    parameters:
+      -
+        name: organizationId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  /tails:
+    summary: Path used to manage the list of tails.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `Tail` entities.  This path contains a
+      `GET` and `POST` operation to perform the list and create tasks, respectively.
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TailListResult'
+          description: Successful response - returns an array of `Tail` entities.
+      operationId: getTails
+      summary: List All Tails
+      description: Gets a list of all `Tail` entities.
+    post:
+      requestBody:
+        description: A new `Tail` to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tail'
+        required: true
+      responses:
+        '201':
+          description: Successful response.
+      operationId: createTail
+      summary: Create a Tail
+      description: Creates a new instance of a `Tail`.
+  '/tails/{tailId}':
+    summary: Path used to manage a single Tail.
+    description: >-
+      The REST endpoint/path used to get, update, and delete single instances of an `Tail`.  This path
+      contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and delete tasks,
+      respectively.
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tail'
+          description: Successful response - returns a single `Tail`.
+      operationId: getTail
+      summary: Get a Tail
+      description: Gets the details of a single instance of a `Tail`.
+    put:
+      requestBody:
+        description: Updated `Tail` information.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tail'
+        required: true
+      responses:
+        '202':
+          description: Successful response.
+      operationId: updateTail
+      summary: Update a Tail
+      description: Updates an existing `Tail`.
+    delete:
+      responses:
+        '204':
+          description: Successful response.
+      operationId: deleteTail
+      summary: Delete a Tail
+      description: Deletes an existing `Tail`.
+    parameters:
+      -
+        name: tailId
+        description: A unique identifier for a `Tail`.
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  /tails/getByTailNumber:
+    post:
+      requestBody:
+        description: tail number of tail to get
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tail'
+          description: Successful response - returns a single `Tail`.
+      operationId: getTailByTailNumber
+  '/pbl/mission/{missionId}':
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mission'
+          description: ok
+      summary: gets missions for a given pbs event id
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mission'
+        required: true
+      parameters:
+        -
+          name: isSARMRole
+          description: ''
+          schema:
+            type: boolean
+          in: query
+          required: false
+        -
+          name: skipPblPersonSave
+          description: ''
+          schema:
+            type: boolean
+          in: query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mission'
+          description: updated mission
+      summary: updates mission for a given missionId
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mission'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mission'
+          description: created mission
+      summary: Create a mission for a given PBS Event ID
+    delete:
+      responses:
+        '204':
+          description: deleted
+      summary: deletes mission for given mission id
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/form781/{missionID}/download':
+    summary: Path used to download Form 781 PDF.
+    get:
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                format: byte
+                type: string
+          description: Successfully downloaded file.
+      summary: Download a Form 781.
+    parameters:
+      -
+        name: missionID
+        description: A unique identifier for a Mission.
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/organization/{organizationId}':
+    summary: Interacts with an organizations missions
+    get:
+      parameters:
+        -
+          name: windowStart
+          description: start of window to begin searching for sorties by
+          schema:
+            format: date-time
+            type: string
+          in: query
+          required: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionForm781ListResult'
+          description: Returns a MissionForm781ListResult
+      summary: Gets all missions for an organization
+    parameters:
+      -
+        name: organizationId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+      -
+        name: isReadyForReview
+        description: >-
+          if true, returns only those missions that have isReadyForReview boolean set to true. else,
+          returns all missions.
+        schema:
+          type: boolean
+        in: query
+  '/pbl/missionData/{missionID}/download':
+    summary: Path used to download mission data PDF.
+    get:
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                format: byte
+                type: string
+          description: Successfully downloads mission data pdf
+      summary: downloads mission data printout for a given mission id
+    parameters:
+      -
+        name: missionID
+        description: UUID for a mission
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/{missionId}/approve':
+    summary: Route to approve stages of the 781 process
+    put:
+      parameters:
+        -
+          name: Role
+          description: ''
+          schema:
+            $ref: '#/components/schemas/RoleEnum'
+          in: query
+          required: true
+      responses:
+        '204':
+          description: Successfully approved stage
+        '403':
+          description: Unable to approve due to incorrect permission
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/sortieFlags/{sortieFlagId}/notes':
+    summary: endpoint for notes pertaining to a mission
+    put:
+      requestBody:
+        description: comment to update
+        content:
+          application/json:
+            schema:
+              type: string
+        required: false
+      parameters:
+        -
+          name: role
+          description: role for which to add notes
+          schema:
+            $ref: '#/components/schemas/RoleEnum'
+          in: query
+          required: true
+      responses:
+        '204':
+          description: successfully updated comments
+      summary: update notes
+    parameters:
+      -
+        name: sortieFlagId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/{missionId}/sortieFlags':
+    summary: endpoint for interacting with sortie flags on a mission
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SortieFlagListResult'
+          description: gets list of sortie flags
+      summary: gets all flags for a given mission
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/{missionId}/armsStatus':
+    summary: arms statuses for mission
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArmsStatusListResult'
+          description: Ok
+      summary: GETs arms statuses for all training records and beans uploaded for a mission
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/{missionId}/push':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                format: uuid
+                type: string
+        required: true
+      responses:
+        '200':
+          description: Push to arms initiated
+        '400':
+          description: 'An unexpected error has occurred '
+        '403':
+          description: You do not have necessary permissions for this action
+      summary: Initiate push of mission and sorties to arms
+      description: Pushes sorties associated to body of uuids to arms
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/{missionId}/manualPushToArms':
+    summary: Path used to manually mark a sorties that have been pushed to arms
+    post:
+      requestBody:
+        description: A new list of sorties to manually set as pushed to arms
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                format: uuid
+                type: string
+        required: true
+      responses:
+        '200':
+          description: Successful response.
+      summary: Create a list of Sorties by UUID
+      description: Creates a new instance of a `SortieIDListResult`
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  /pbl/missionEventTypes:
+    summary: Path used to manage the list of missioneventtypes.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `MissionEventType` entities.  This
+      path contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissionEventTypeList'
+          description: Successful response - returns an array of `MissionEventType` entities.
+      operationId: getMissionEventTypes
+      summary: List All MissionEventTypes
+      description: Gets a list of all `MissionEventType` entities.
+    post:
+      requestBody:
+        description: A new `MissionEventType` to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MissionEventTypeList'
+            examples:
+              ExamplePost:
+                value:
+                  result:
+                    -
+                      crewPosition: PILOT
+                      eventID: string
+                      isSim: true
+                      name: string
+                    -
+                      crewPosition: LOADMASTER
+                      eventID: string
+                      isSim: true
+                      name: string
+                    -
+                      crewPosition: PILOT_LOADMASTER
+                      eventID: string
+                      isSim: true
+                      name: string
+        required: true
+      responses:
+        '201':
+          description: Successful response.
+      operationId: createMissionEventType
+      summary: Create a MissionEventType
+      description: Creates a new instance of a `MissionEventType`.
+  '/pbl/pblperson/{personId}':
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PBLPerson'
+          description: get PBL Person
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PBLPerson'
+        required: true
+      responses:
+        '204':
+          description: Update successful
+    parameters:
+      -
+        name: personId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/mission/{missionId}/precheck':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                format: uuid
+                type: string
+        required: true
+      responses:
+        '200':
+          description: Push to arms initiated
+        '400':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+          description: 'An unexpected error has occurred '
+        '403':
+          description: You do not have necessary permissions for this action
+      summary: Initiate precheck of mission and sorties to arms
+      description: precheck ARMS for potential issues
+    parameters:
+      -
+        name: missionId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/tasks/{organizationId}':
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingTasksList'
+          description: get PBL Training Tasks for an organization
+    parameters:
+      -
+        name: organizationId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+      -
+        name: showAll
+        description: >-
+          if true, returns all training tasks, including non flight events. else, returns only tasks
+          with flight event true.
+        schema:
+          default: false
+          type: boolean
+        in: query
+  '/pbl/tasks/synchronize/{organizationId}':
+    post:
+      responses:
+        '204':
+          description: Successful response
+    parameters:
+      -
+        name: organizationId
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/tasks/filters/{organizationId}':
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PblTrainingTaskFiltersList'
+          description: get PBL Training Task Filters for an organization
+      description: Get all `PblTrainingTaskFilter` for an organization.
+    post:
+      requestBody:
+        description: A new filter `PblTrainingTaskFilter` to be created or updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PblTrainingTaskFilter'
+        required: true
+      responses:
+        '201':
+          description: Successful response.
+      operationId: createOrUpdatePblTrainingTaskFilter
+      summary: Create/update a PblTrainingTaskFilter
+      description: >-
+        Creates a new instance of a `PblTrainingTaskFilter` if one does not already exist, otherwise
+        overrides existing `PblTrainingTaskFilter`.
+    parameters:
+      -
+        name: organizationId
+        description: A unique identifier for an `Organization`.
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+  '/pbl/tasks/filters/{organizationId}/{filter}':
+    delete:
+      responses:
+        '204':
+          description: Successful response.
+      operationId: deletePblTrainingTaskFilter
+      summary: Delete a training task filter
+      description: Deletes an existing `PblTrainingTaskFilter` for an organization.
+    parameters:
+      -
+        name: organizationId
+        description: A unique identifier for an `Organization`.
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+      -
+        name: filter
+        description: The filter to remove.
+        schema:
+          type: string
+        in: path
+        required: true
+  /pbl/tasks/crewpositions:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PblCrewPositionsList'
+          description: get PBL Crew Positions
+      operationId: getCrewPositions
+  /pbl/tasks/timecategories:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PblTimeCategoriesList'
+          description: get PBL Time Categories
+      operationId: getTimeCategories
+  '/pbl/tasks/{id}/{isFlightEvent}':
+    post:
+      responses:
+        '204':
+          description: Successful response.
+      operationId: pblSetTrainingTaskIsFlightEvent
+    parameters:
+      -
+        name: id
+        description: Unique identifier for a Training Task entry in Puckboard
+        schema:
+          format: uuid
+          type: string
+        in: path
+        required: true
+      -
+        name: isFlightEvent
+        description: Boolean to update whether the Training Task is a flight event or not.
+        schema:
+          type: boolean
+        in: path
+        required: true
+  /remis/upload:
+    summary: Endpoint to upload REMIS information
+    description: Upload REMIS excel sheet
+    post:
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  format: binary
+                  type: string
+        required: true
+      responses:
+        '204':
+          description: Excel upload successful
+        '422':
+          description: Bad Excel formatting
+      summary: Endpoint to upload REMIS excel
+      description: Rebuild the REMIS data set in PB
+  /remis/all:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PblRemisTailList'
+          description: get all PBL Remis Tails information
+      operationId: getAllRemisTails
+  /remis/filter:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PblRemisTailList'
+          description: get PBL Remis Tails information for a given list of MWS codes
+      operationId: getRemisTailsByMws
+    parameters:
+      -
+        name: mwsList
+        description: List of codes for Major Weapons System (MWS) to filter the PBL Remis Tails by
+        schema:
+          type: array
+          items:
+            type: string
+        in: query
+        required: true
+  /remis/mws/all:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MwsList'
+          description: get list of all curated MWS information in PB
+      operationId: getAllMws
+  '/remis/mws/{mws}':
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mws'
+          description: Successful response - returns a single `MWS`.
+      operationId: getMWS
+      summary: Get an MWS
+      description: Gets the details of a single instance of an `MWS`.
+    put:
+      requestBody:
+        description: Updated `MWS` information.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mws'
+        required: true
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mws'
+          description: Successful response.
+      operationId: updateMWS
+      summary: Update MWS information
+      description: Create or update an `MWS` with it's associated REMIS MDS code mappings.
+    parameters:
+      -
+        name: mws
+        description: Code for a Major Weapons System (MWS)
+        schema:
+          type: string
+        in: path
+        required: true
+components:
+  schemas:
+    PBLCrewLine:
+      description: PBL crew line / role assignment representation
+      type: object
+      properties:
+        payGrade:
+          description: ''
+          type: string
+        firstName:
+          description: ''
+          type: string
+        primaryOrganizationName:
+          description: ''
+          type: string
+        role:
+          description: ''
+          type: string
+        roleAbbreviation:
+          description: ''
+          type: string
+        pbsID:
+          format: uuid
+          description: ''
+          type: string
+        lastName:
+          description: ''
+          type: string
+        last4:
+          description: ''
+          type: string
+    PBLEventListResult:
+      description: List of PBLEvents
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/PBLEvent'
+    Tail:
+      description: Tail information about a plane
+      required:
+        - tailNumber
+        - harmLocation
+        - unitCharged
+        - mds
+      type: object
+      properties:
+        id:
+          format: uuid
+          description: uuid of the tail
+          type: string
+        tailNumber:
+          description: ''
+          type: string
+        unitCharged:
+          description: ''
+          type: string
+        harmLocation:
+          description: ''
+          type: string
+        mds:
+          description: ''
+          type: string
+    TailListResult:
+      description: ''
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/Tail'
+    AircrewData:
+      description: PBL Aircrew Data used in context of form781
+      required:
+        - flightConditionsCombatSupportTime
+        - flightConditionsCombatSupportSorties
+        - flightConditionsCombatSorties
+        - flightConditionsCombatTime
+        - flightConditionsInstruments
+        - flightConditionsNight
+        - flightConditionsNVG
+        - flightConditionsSimInstruments
+        - flightAuthDutyCode
+        - flightTimeEvaluator
+        - flightTimeInstructor
+        - flightTimeOther
+        - flightTimePrimary
+        - flightTimeSecondary
+        - flightTimeTotalSorties
+        - flightTimeTotalTime
+        - personLastName
+        - personFirstName
+        - reserveStatus
+        - personLast4
+      type: object
+      properties:
+        id:
+          format: uuid
+          description: ''
+          type: string
+        flightConditionsCombatSorties:
+          description: ''
+          type: integer
+        flightConditionsCombatSupportSorties:
+          description: ''
+          type: integer
+        flightConditionsCombatSupportTime:
+          format: int64
+          description: ''
+          type: integer
+        flightConditionsCombatTime:
+          format: int64
+          description: ''
+          type: integer
+        flightConditionsInstruments:
+          format: int64
+          description: ''
+          type: integer
+        flightConditionsNight:
+          format: int64
+          description: ''
+          type: integer
+        flightConditionsNVG:
+          format: int64
+          description: ''
+          type: integer
+        flightConditionsSimInstruments:
+          format: int64
+          description: ''
+          type: integer
+        flightAuthDutyCode:
+          description: ''
+          type: string
+        flyingOrganization:
+          description: ''
+          type: string
+        flightTimeEvaluator:
+          format: int64
+          description: ''
+          type: integer
+        flightTimeInstructor:
+          format: int64
+          description: ''
+          type: integer
+        flightTimeOther:
+          format: int64
+          description: ''
+          type: integer
+        flightTimePrimary:
+          format: int64
+          description: ''
+          type: integer
+        flightTimeSecondary:
+          format: int64
+          description: ''
+          type: integer
+        flightTimeTotalSorties:
+          description: ''
+          type: integer
+        flightTimeTotalTime:
+          format: int64
+          description: ''
+          type: integer
+        personLastName:
+          description: ''
+          type: string
+        personFirstName:
+          description: ''
+          type: string
+        reserveStatus:
+          description: ''
+          type: integer
+        personLast4:
+          description: ''
+          type: string
+        form781:
+          $ref: '#/components/schemas/Form781'
+          description: ''
+    Flight:
+      description: PBL flight used in context ofForm781
+      required: []
+      type: object
+      properties:
+        takeoffICAO:
+          description: ''
+          type: string
+        numFullStop:
+          description: ''
+          type: integer
+        id:
+          format: uuid
+          description: ''
+          type: string
+        landTime:
+          format: Date
+          description: ''
+          type: string
+        missionNumber:
+          description: ''
+          type: string
+        missionSymbol:
+          description: ''
+          type: string
+        pilotReviewInitials:
+          description: ''
+          type: string
+        sorties:
+          description: ''
+          type: integer
+        specialUse:
+          description: ''
+          type: string
+        takeOffTime:
+          format: Date
+          description: ''
+          type: string
+        landICAO:
+          description: ''
+          type: string
+        totalLandings:
+          description: ''
+          type: integer
+        totalTime:
+          format: double
+          description: ''
+          type: number
+        numTouchAndGoes:
+          description: ''
+          type: integer
+        pbsID:
+          format: uuid
+          description: ''
+          type: string
+    Form781:
+      description: ''
+      type: object
+      properties:
+        armsAuditDate:
+          format: Date
+          description: ''
+          type: string
+        armsAuditInitials:
+          description: ''
+          type: string
+        armsInputDate:
+          format: Date
+          description: ''
+          type: string
+        armsInputInitials:
+          description: ''
+          type: string
+        date:
+          format: Date
+          description: ''
+          type: string
+        extractCertificationBranch:
+          description: ''
+          type: string
+        extractCertificationDSN:
+          description: ''
+          type: string
+        extractCertificationPrintName:
+          description: ''
+          type: string
+        extractCertificationRank:
+          description: ''
+          type: string
+        flightAuthNum:
+          description: ''
+          type: string
+        grandTotalFullStop:
+          description: ''
+          type: integer
+        grandTotalLandings:
+          description: ''
+          type: integer
+        grandTotalSorties:
+          description: ''
+          type: integer
+        grandTotalTime:
+          format: int64
+          description: ''
+          type: integer
+        grandTotalTouchAndGo:
+          description: ''
+          type: integer
+        harmLocation:
+          description: ''
+          type: string
+        issuingUnit:
+          description: ''
+          type: string
+        isComplete:
+          description: ''
+          type: boolean
+        lastPrinted:
+          format: Date
+          description: ''
+          type: string
+        lastShared:
+          format: Date
+          description: ''
+          type: string
+        maintenanceReview:
+          description: ''
+          type: string
+        mds:
+          description: ''
+          type: string
+        remarks:
+          description: ''
+          maxLength: 9000
+          type: string
+        sarmReview:
+          description: ''
+          type: string
+        serialNumber:
+          description: ''
+          type: string
+        unitCharged:
+          description: ''
+          type: string
+        aircrewData:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/AircrewData'
+        flights:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/Flight'
+        form781ID:
+          format: uuid
+          description: ''
+          type: string
+    Mission:
+      description: PBL Mission
+      type: object
+      allOf:
+        -
+          type: object
+          properties:
+            id:
+              format: uuid
+              description: ''
+              type: string
+            organizationID:
+              format: uuid
+              description: ''
+              type: string
+            pbsID:
+              format: uuid
+              description: ''
+              type: string
+            isSim:
+              description: ''
+              type: boolean
+            isReadyForReview:
+              type: boolean
+            name:
+              type: string
+            summary:
+              type: string
+            sorties:
+              description: ''
+              type: array
+              items:
+                $ref: '#/components/schemas/Sortie'
+            additionalMissionInformation:
+              $ref: '#/components/schemas/AdditionalMissionInformation'
+              description: ''
+        -
+          $ref: '#/components/schemas/Auditable'
+    Metrics:
+      description: ''
+      type: object
+      properties:
+        airdropWeight:
+          format: double
+          type: number
+        airlandWeight:
+          format: double
+          type: number
+        numAirdropPallets:
+          type: integer
+        numAirlandPallets:
+          type: integer
+        numHeavies:
+          type: integer
+        numJumpers:
+          type: integer
+        numPassengers:
+          type: integer
+        numRollingStock:
+          type: integer
+    SortieType:
+      description: ''
+      type: object
+      properties:
+        isAeromedevac:
+          type: boolean
+        isAirdrop:
+          type: boolean
+        isAirland:
+          type: boolean
+        isAirRefueling:
+          type: boolean
+        isAMCForm54Filed:
+          type: boolean
+        isAMCForm97Filed:
+          type: boolean
+        isAskTACCFiled:
+          type: boolean
+        isCombat:
+          type: boolean
+        isCombatSupport:
+          type: boolean
+        isDistinguishedVisitor:
+          type: boolean
+        isHumanitarian:
+          type: boolean
+        isSortieDelay:
+          type: boolean
+        isSpecialOpsLL2:
+          type: boolean
+        sortieDelayRemarks:
+          type: string
+    CrewLine:
+      description: 'Crew line for form781, different from PBLCrewLine which PBL uses to grab data'
+      required:
+        - person
+        - flightAuthDutyCode
+      type: object
+      properties:
+        flightAuthDutyCode:
+          maxLength: 255
+          minLength: 2
+          type: string
+        flyingOrganization:
+          type: string
+        isAircraftCommander:
+          type: boolean
+        id:
+          format: uuid
+          type: string
+        reserveStatus:
+          type: integer
+        person:
+          $ref: '#/components/schemas/PBLPerson'
+          description: ''
+        flightTime:
+          $ref: '#/components/schemas/FlightTime'
+          description: ''
+        flightConditions:
+          $ref: '#/components/schemas/FlightConditions'
+          description: ''
+        missionEventRecords:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/MissionEventRecord'
+    FlightConditions:
+      description: ''
+      type: object
+      properties:
+        combatSupportTime:
+          format: double
+          description: ''
+          type: number
+        combatTime:
+          format: double
+          description: ''
+          type: number
+        instruments:
+          format: double
+          description: ''
+          type: number
+        night:
+          format: double
+          description: ''
+          type: number
+        nvg:
+          format: double
+          description: ''
+          type: number
+        simInstruments:
+          format: double
+          description: ''
+          type: number
+    FlightTime:
+      description: ''
+      type: object
+      properties:
+        evaluator:
+          format: double
+          description: ''
+          type: number
+        instructor:
+          format: double
+          description: ''
+          type: number
+        other:
+          format: double
+          description: ''
+          type: number
+        primary:
+          format: double
+          description: ''
+          type: number
+        secondary:
+          format: double
+          description: ''
+          type: number
+    Fuel:
+      description: ''
+      type: object
+      properties:
+        airRefuel:
+          format: double
+          description: ''
+          type: number
+        land:
+          format: double
+          description: ''
+          type: number
+        ramp:
+          format: double
+          description: ''
+          type: number
+        didFuelExceedRequirement:
+          description: ''
+          default: false
+          type: boolean
+        didLimitFuelUse:
+          description: ''
+          default: false
+          type: boolean
+        didOptimize:
+          description: ''
+          default: false
+          type: boolean
+        didReducedEngineTaxiIn:
+          description: ''
+          default: false
+          type: boolean
+        didTankerFuel:
+          description: ''
+          default: false
+          type: boolean
+    Sortie:
+      description: ''
+      required:
+        - takeoffTime
+        - serialNumber
+      type: object
+      properties:
+        auxiliaryPowerUnitHours:
+          format: double
+          type: number
+        comments:
+          maxLength: 1000
+          type: string
+        flightAuthNumber:
+          type: string
+        harmLocation:
+          type: string
+        id:
+          format: uuid
+          type: string
+        issuingUnit:
+          type: string
+        landICAO:
+          type: string
+        landTime:
+          format: date-time
+          type: string
+        mds:
+          type: string
+        missionNumber:
+          type: string
+        missionSymbol:
+          type: string
+        numFullStop:
+          type: integer
+        numBoomsRequired:
+          type: integer
+        numLoadmastersRequired:
+          type: integer
+        numTouchAndGoes:
+          type: integer
+        serialNumber:
+          type: string
+        specialUse:
+          type: string
+        takeoffCenterOfGravity:
+          format: double
+          type: number
+        takeoffICAO:
+          type: string
+        takeoffTime:
+          format: date-time
+          type: string
+        unitCharged:
+          type: string
+        crewLines:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewLine'
+        fuel:
+          $ref: '#/components/schemas/Fuel'
+          description: ''
+        metrics:
+          $ref: '#/components/schemas/Metrics'
+          description: ''
+        sortieType:
+          $ref: '#/components/schemas/SortieType'
+          description: ''
+        form781Remarks:
+          description: ''
+          maxLength: 1500
+          type: string
+        form791:
+          $ref: '#/components/schemas/Form791'
+          description: ''
+    MissionListResult:
+      description: List Result containing Missions
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/Mission'
+    PBLPerson:
+      description: |
+        PBL Person
+      required:
+        - lastName
+        - last4
+        - firstName
+        - id
+      type: object
+      properties:
+        branch:
+          type: integer
+        firstName:
+          type: string
+        id:
+          format: uuid
+          type: string
+        last4:
+          type: string
+        lastName:
+          type: string
+        organization:
+          type: string
+        pbsUUID:
+          format: uuid
+          type: string
+        rank:
+          type: integer
+    MissionForm781:
+      description: Mission with its corresponding form781s
+      required:
+        - form781s
+        - mission
+      type: object
+      properties:
+        form781s:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/Form781'
+        mission:
+          $ref: '#/components/schemas/Mission'
+          description: ''
+    MissionForm781ListResult:
+      description: ''
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/MissionForm781'
+    Auditable:
+      $ref: './puckboard.yml#/components/schemas/Auditable'
+    RoleEnum:
+      description: ''
+      enum:
+        - MX
+        - ADO
+        - SARM
+      type: string
+    SortieFlagListResult:
+      description: ''
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/SortieFlag'
+    SortieFlag:
+      description: data pertaining to a flag on a sortie
+      type: object
+      properties:
+        data:
+          description: error data description
+          type: string
+        detail:
+          description: detailed message describing error
+          type: string
+        aircrewNotes:
+          description: notes left by aircrew pertaining to flag
+          type: string
+        adoNotes:
+          description: notes left by ado pertaining to flag
+          type: string
+        sarmNotes:
+          description: notes left by sarm pertaining to flag
+          type: string
+        id:
+          format: uuid
+          description: uuid of a flag generated by pbs
+          type: string
+        pblSortieId:
+          format: uuid
+          description: uuid of sortie the flag is on
+          type: string
+    AdditionalMissionInformation:
+      description: Additional information to track about this mission
+      type: object
+      allOf:
+        -
+          type: object
+          properties:
+            timeApprovedByADO:
+              format: Date
+              description: ''
+              type: string
+            timeApprovedByMx:
+              format: Date
+              description: ''
+              type: string
+            timeApprovedBySARM:
+              format: Date
+              description: ''
+              type: string
+            mxApprovedBy:
+              format: uuid
+              description: ''
+              type: string
+            adoApprovedBy:
+              format: uuid
+              description: ''
+              type: string
+            sarmApprovedBy:
+              format: uuid
+              description: ''
+              type: string
+            timeReceived:
+              format: Date
+              description: ''
+              type: string
+            timeRevised:
+              format: Date
+              description: ''
+              type: string
+        -
+          $ref: '#/components/schemas/Auditable'
+    PBLEvent:
+      description: PBL representation of an event
+      required:
+        - id
+        - startDate
+        - endDate
+      type: object
+      properties:
+        toICAO:
+          description: Landing Location
+          type: string
+        fromICAO:
+          description: takeoff location
+          type: string
+        missionNumber:
+          description: ''
+          type: string
+        id:
+          format: uuid
+          description: ''
+          type: string
+        startDate:
+          format: Date
+          description: ''
+          type: string
+        endDate:
+          format: Date
+          description: ''
+          type: string
+        crewLines:
+          description: 'PBL crew, role assignments'
+          type: array
+          items:
+            $ref: '#/components/schemas/PBLCrewLine'
+        name:
+          description: ''
+          type: string
+        organizationId:
+          format: uuid
+          description: PBS ID of organization that event is scheduled for
+          type: string
+    ArmsUploadStatusEnum:
+      description: ''
+      enum:
+        - RECEIVED
+        - SUBMITTED
+        - INCOMPLETE
+        - MANUALLY_ADDED
+      type: string
+    ArmsStatusListResult:
+      description: Object containing statuses for all beans and flight records for a mission
+      required:
+        - beanStatuses
+        - flightRecordStatuses
+      type: object
+      properties:
+        beanStatuses:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/ArmsBeanStatus'
+        flightRecordStatuses:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/ArmsFlightRecordStatus'
+    SortieIDListResult:
+      description: list result for sorties
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: list of Sortie UUIDs.
+          type: array
+          items:
+            format: uuid
+            type: string
+    MissionEventRecord:
+      description: ''
+      required:
+        - eventID
+        - numberAccomplished
+      type: object
+      properties:
+        asInstructor:
+          description: ''
+          type: boolean
+        eventID:
+          description: ''
+          type: string
+        numberAccomplished:
+          description: ''
+          type: integer
+        id:
+          format: uuid
+          description: ''
+          type: string
+    ArmsFlightRecordStatus:
+      description: ''
+      required:
+        - id
+        - sortieId
+        - status
+        - flightRecordStatusMessages
+      type: object
+      properties:
+        id:
+          format: uuid
+          description: ''
+          type: string
+        status:
+          $ref: '#/components/schemas/ArmsUploadStatusEnum'
+          description: ''
+        sortieId:
+          format: uuid
+          description: ''
+          type: string
+        flightRecordStatusMessages:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/ArmsFlightRecordStatusMessage'
+    CrewPositionEnum:
+      description: ''
+      enum:
+        - PILOT
+        - LOADMASTER
+        - PILOT/LOADMASTER
+      type: string
+    MissionEventType:
+      description: ''
+      required:
+        - eventID
+        - name
+      type: object
+      properties:
+        crewPosition:
+          $ref: '#/components/schemas/CrewPositionEnum'
+          description: ''
+        eventID:
+          description: ''
+          type: string
+        isSim:
+          description: ''
+          type: boolean
+        name:
+          description: ''
+          type: string
+    MissionEventTypeList:
+      description: ''
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: '    '
+          type: array
+          items:
+            $ref: '#/components/schemas/MissionEventType'
+    ArmsFlightRecordStatusMessage:
+      description: ''
+      required:
+        - id
+      type: object
+      properties:
+        armsMessage:
+          description: ''
+          type: string
+        userDisplayMessage:
+          description: ''
+          type: string
+        id:
+          format: uuid
+          description: ''
+          type: string
+        createdDate:
+          format: Date
+          description: date of entry creation
+          type: string
+    ArmsBeanStatusMessage:
+      description: ''
+      required:
+        - id
+      type: object
+      properties:
+        armsMessage:
+          description: ''
+          type: string
+        userDisplayMessage:
+          description: ''
+          type: string
+        id:
+          format: uuid
+          description: ''
+          type: string
+        createdDate:
+          format: Date
+          description: date of entry creation
+          type: string
+    ArmsBeanStatus:
+      description: ''
+      required:
+        - id
+        - missionEventRecordId
+        - status
+      type: object
+      properties:
+        id:
+          format: uuid
+          description: ''
+          type: string
+        status:
+          $ref: '#/components/schemas/ArmsUploadStatusEnum'
+          description: ''
+        missionEventRecordId:
+          format: uuid
+          description: ''
+          type: string
+        armsBeanStatusMessages:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/ArmsBeanStatusMessage'
+    PblTrainingTask:
+      description: Pbl Training Task
+      required:
+        - taskId
+        - taskName
+      type: object
+      properties:
+        id:
+          format: uuid
+          description: unique identifier for training task in an org
+          type: string
+        crewPositions:
+          description: Crew position codes allowed for task
+          type: array
+          items:
+            type: string
+        timeCategories:
+          description: Time category codes allowed for task
+          type: array
+          items:
+            type: string
+        taskId:
+          description: Training task id
+          type: string
+        taskName:
+          description: Training task name
+          type: string
+        flightEvent:
+          description: Is Flight Event flag
+          type: boolean
+    TrainingTasksList:
+      description: List of training tasks
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: '    '
+          type: array
+          items:
+            $ref: '#/components/schemas/PblTrainingTask'
+    PblTrainingTaskFilter:
+      description: Pbl Training Task Filter for an organization
+      required:
+        - filter
+        - organizationId
+      type: object
+      properties:
+        timeCategories:
+          description: Time types to apply to training tasks
+          type: array
+          items:
+            type: string
+        filter:
+          description: String to filter training task ids
+          type: string
+    PblTrainingTaskFiltersList:
+      description: List of training task filters for an organization
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: '    '
+          type: array
+          items:
+            $ref: '#/components/schemas/PblTrainingTaskFilter'
+    PblCrewPosition:
+      description: Crew Position for tasks
+      required:
+        - code
+        - name
+      type: object
+      properties:
+        code:
+          description: String code representing crew position
+          type: string
+        name:
+          description: String name of the crew position
+          type: string
+    PblCrewPositionsList:
+      description: List of crew positions
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: '    '
+          type: array
+          items:
+            $ref: '#/components/schemas/PblCrewPosition'
+    PblTimeCategory:
+      description: Time Category for events
+      required:
+        - code
+        - name
+      type: object
+      properties:
+        code:
+          description: String code representing time category
+          type: string
+        name:
+          description: String name of the time category
+          type: string
+    PblTimeCategoriesList:
+      description: List of time categories
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: '    '
+          type: array
+          items:
+            $ref: '#/components/schemas/PblTimeCategory'
+    PblRemisTail:
+      description: Remis tail information
+      required:
+        - id
+        - tailNumber
+        - dodaac
+        - country
+      properties:
+        id:
+          format: uuid
+          description: unique identifier for pbl remis tail
+          type: string
+        tailNumber:
+          description: Tail number of aircraft
+          type: string
+        mds:
+          description: Mission Design Series (MDS) of aircraft
+          type: string
+        mws:
+          description: Major Weapons System (MWS) of aircraft
+          type: string
+        orgCode:
+          description: String code representing owning organization of aircraft
+          type: string
+        orgName:
+          description: String name of owning organization of aircraft
+          type: string
+        dodaac:
+          description: String dodaac for aircraft
+          type: string
+        country:
+          description: String country for owning country of aircraft
+          type: string
+    PblRemisTailList:
+      description: List of remis tails
+      required:
+        - result
+      type: object
+      properties:
+        result:
+          description: '    '
+          type: array
+          items:
+            $ref: '#/components/schemas/PblRemisTail'
+    Mws:
+      description: MWS information
+      required:
+        - mws
+        - remisCodes
+      properties:
+        mws:
+          description: Major Weapons System (MWS) code
+          type: string
+        remisCodes:
+          description: List of codes used to identify MDS or Type/Model/Series in REMIS data
+          type: array
+          items:
+            type: string
+    MwsList:
+      description: List of all explicitly mapped & supported Major Weapons System (MWS) types
+      required:
+        - list
+      properties:
+        result:
+          description: List of all explicitly mapped & supported Major Weapons System (MWS) types
+          type: array
+          items:
+            type: string
+    Form791:
+      title: Root Type for Form791
+      description: ''
+      type: object
+      properties:
+        fuelGrade:
+          type: string
+        refuelerGrade:
+          type: string
+        refuelerName:
+          type: string
+        tankerDoDAAC:
+          type: string
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        id:
+          format: uuid
+          type: string
+      example:
+        fuelGrade: ''
+        refuelerGrade: ''
+        refuelerName: ''
+        tankerDoDAAC: ''
+        issues: {}
+    Issue:
+      title: Root Type for Issue
+      description: ''
+      type: object
+      properties:
+        aircraftCallSign:
+          exclusiveMaximum: false
+          type: string
+        aircraftCodeAndHomeStation:
+          type: string
+        aircraftCommand:
+          type: string
+        aircraftNumber:
+          type: string
+        aircraftType:
+          type: string
+        dateCreated:
+          format: date-time
+          type: string
+        quantityIssuedPounds:
+          format: double
+          type: number
+        id:
+          format: uuid
+          type: string
+      example:
+        aircraftCallSign: ''
+        aircraftCodeAndHomeStation: ''
+        aircraftCommand: ''
+        aircraftNumber: ''
+        aircraftType: ''
+        dateCreated: ''
+        quantityIssuedPounds: 1
+
